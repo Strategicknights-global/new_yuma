@@ -1,0 +1,438 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  onSnapshot,
+  collection,
+  query,
+  where,
+  getDocs,
+  limit,
+  addDoc,
+  serverTimestamp,
+  orderBy,
+  documentId,
+} from 'firebase/firestore';
+import { db } from '../../firebase';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import Navbar from './Navbar';
+import Footer from './Footer';
+import { Heart, CheckCircle, XCircle, Star } from 'lucide-react';
+
+// A reusable component to display star ratings
+const StarRating = ({ rating, size = 'w-5 h-5' }) => {
+  const fullStars = Math.floor(rating);
+  const halfStar = rating % 1 !== 0;
+  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+  return (
+    <div className="flex items-center">
+      {[...Array(fullStars)].map((_, i) => (
+        <Star key={`full-${i}`} className={`${size} text-yellow-400 fill-yellow-400`} />
+      ))}
+      {halfStar && <Star key="half" className={`${size} text-yellow-400 fill-yellow-200`} />}
+      {[...Array(emptyStars)].map((_, i) => (
+        <Star key={`empty-${i}`} className={`${size} text-gray-300`} />
+      ))}
+    </div>
+  );
+};
+
+const ProductDetailPage = () => {
+  const { id } = useParams();
+  const { addToCart } = useCart();
+  const { user, isLoggedIn } = useAuth();
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [notification, setNotification] = useState('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
+  
+  // --- State for Recommendations and Reviews ---
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  
+  // --- State for Review Form ---
+  const [newReviewName, setNewReviewName] = useState('');
+  const [newReviewRating, setNewReviewRating] = useState(0);
+  const [newReviewComment, setNewReviewComment] = useState('');
+  const [hoverRating, setHoverRating] = useState(0);
+  const [wordCount, setWordCount] = useState(0);
+  const MAX_WORDS = 200;
+
+
+  const buttonRef = useRef(null);
+
+  // Fetch main product details
+  useEffect(() => {
+    // Scroll to top when a new product page is loaded
+    window.scrollTo(0, 0);
+
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const productRef = doc(db, 'products', id);
+        const productSnap = await getDoc(productRef);
+
+        if (productSnap.exists()) {
+          const productData = { id: productSnap.id, ...productSnap.data() };
+          setProduct(productData);
+          setSelectedImageIndex(0);
+
+          if (productData.variants && productData.variants.length > 0) {
+            setSelectedVariant(productData.variants[0]);
+          }
+        } else {
+          setError('Product not found.');
+        }
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        setError('Failed to load product details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) {
+      fetchProduct();
+      setReviews([]);
+      setRecommendedProducts([]);
+    }
+  }, [id]);
+
+  // Fetch Recommended Products based on category
+  useEffect(() => {
+    if (!product || !product.categoryId) return;
+    
+    const fetchRecommendations = async () => {
+      try {
+        const productsRef = collection(db, 'products');
+        const q = query(
+          productsRef, 
+          where('categoryId', '==', product.categoryId), 
+          where(documentId(), '!=', product.id),
+          limit(10)
+        );
+        const querySnapshot = await getDocs(q);
+        const recs = [];
+        querySnapshot.forEach((doc) => {
+          recs.push({ id: doc.id, ...doc.data() });
+        });
+        setRecommendedProducts(recs);
+      } catch (err) {
+        console.error("Failed to fetch recommendations:", err);
+      }
+    };
+
+    fetchRecommendations();
+  }, [product]);
+
+  // Fetch Product Reviews in real-time
+  useEffect(() => {
+    if (!id) return;
+
+    const reviewsRef = collection(db, 'products', id, 'reviews');
+    const q = query(reviewsRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedReviews = [];
+      querySnapshot.forEach((doc) => {
+        fetchedReviews.push({ id: doc.id, ...doc.data() });
+      });
+      setReviews(fetchedReviews);
+    }, (err) => {
+        console.error("Error fetching reviews:", err);
+    });
+
+    return () => unsubscribe();
+  }, [id]);
+
+  // Fetch user wishlist
+  useEffect(() => {
+    if (!user) {
+      setWishlist([]);
+      return;
+    }
+    const userRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setWishlist(docSnap.data().wishlist || []);
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  // Pre-fill review name if user is logged in
+  useEffect(() => {
+    if (isLoggedIn && user) {
+        setNewReviewName(user.displayName || '');
+    }
+  }, [user, isLoggedIn]);
+
+  // Calculate average rating
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) return 0;
+    const total = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  }, [reviews]);
+
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => setNotification(''), 3000);
+  };
+
+  const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    if (!product?.inStock) {
+      showNotification('This product is out of stock.');
+      return;
+    }
+    addToCart(product, quantity, selectedVariant);
+    const displayName = selectedVariant ? `${product.name} (${selectedVariant.size})` : product.name;
+    showNotification(`${quantity} x ${displayName} added to cart!`);
+
+    if (buttonRef.current) {
+      buttonRef.current.classList.add("clicked");
+      setTimeout(() => buttonRef.current.classList.remove("clicked"), 1500);
+    }
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      if (wishlist.includes(product.id)) {
+        await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
+        showNotification(`${product.name} removed from wishlist`);
+      } else {
+        await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
+        showNotification(`${product.name} added to wishlist`);
+      }
+    } catch (err) {
+      console.error('Error updating wishlist:', err);
+      showNotification('Failed to update wishlist.');
+    }
+  };
+
+  // Handle changes in the review comment textarea
+  const handleCommentChange = (e) => {
+    const text = e.target.value;
+    const currentWords = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+    
+    if (currentWords <= MAX_WORDS) {
+        setNewReviewComment(text);
+        setWordCount(currentWords);
+    } else {
+        showNotification(`Your review cannot exceed ${MAX_WORDS} words.`);
+    }
+  };
+
+  // Handle Review Submission
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+        showNotification("Please log in to submit a review.");
+        return;
+    }
+    if (newReviewName.trim() === '' || newReviewRating === 0 || newReviewComment.trim() === '') {
+        showNotification("Please fill out your name, rating, and comment.");
+        return;
+    }
+    if (wordCount > MAX_WORDS) {
+        showNotification(`Review must be ${MAX_WORDS} words or less.`);
+        return;
+    }
+
+    setReviewSubmitting(true);
+    try {
+        const reviewsCollectionRef = collection(db, 'products', product.id, 'reviews');
+        await addDoc(reviewsCollectionRef, {
+            userId: user.uid,
+            userName: newReviewName.trim(),
+            rating: newReviewRating,
+            comment: newReviewComment.trim(),
+            createdAt: serverTimestamp(),
+        });
+        showNotification("Review submitted successfully!");
+        setNewReviewRating(0);
+        setNewReviewComment('');
+        setWordCount(0);
+    } catch (err) {
+        console.error("Error submitting review:", err);
+        showNotification("Failed to submit review.");
+    } finally {
+        setReviewSubmitting(false);
+    }
+  };
+
+  const incrementQuantity = () => setQuantity((q) => q + 1);
+  const decrementQuantity = () => { if (quantity > 1) setQuantity((q) => q - 1); };
+
+  if (loading) return <><Navbar /><div className="min-h-screen flex items-center justify-center text-xl font-semibold">Loading Product...</div></>;
+  if (error) return <><Navbar /><div className="min-h-screen flex items-center justify-center text-red-500">{error}</div></>;
+  if (!product) return null;
+
+  const displayPrice = selectedVariant?.discountPrice ?? selectedVariant?.price ?? product.price;
+  const originalPrice = selectedVariant?.price ?? product.originalPrice;
+  const stockStatus = product.inStock ? "in" : "out";
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {notification && (
+        <div className="fixed top-20 right-4 z-[100] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
+          {notification}
+        </div>
+      )}
+
+      <style>{`
+        .cart-button { position: relative; padding: 10px; width: 160px; height: 48px; border: 0; border-radius: 10px; background-color: #f0c242; outline: none; cursor: pointer; color: #fff; transition: .3s ease-in-out; overflow: hidden; font-size: 15px; font-weight: 600; }
+        .cart-button:hover { background-color: #e0b034; }
+        .cart-button:active { transform: scale(.9); }
+        .cart-button .fa-shopping-cart { position: absolute; z-index: 2; top: 50%; left: -10%; font-size: 1.4em; transform: translate(-50%,-50%); color: #fff; }
+        .cart-button .fa-box { position: absolute; z-index: 3; top: -20%; left: 52%; font-size: 1em; transform: translate(-50%,-50%); color: #fff; }
+        .cart-button span { position: absolute; z-index: 3; left: 50%; top: 50%; font-size: 0.95em; color: #fff; transform: translate(-50%,-50%); }
+        .cart-button span.add-to-cart { opacity: 1; }
+        .cart-button span.added { opacity: 0; }
+        .cart-button.clicked .fa-shopping-cart { animation: cart 1.5s ease-in-out forwards; }
+        .cart-button.clicked .fa-box { animation: box 1.5s ease-in-out forwards; }
+        .cart-button.clicked span.add-to-cart { animation: txt1 1.5s ease-in-out forwards; }
+        .cart-button.clicked span.added { animation: txt2 1.5s ease-in-out forwards; }
+        @keyframes cart { 0%{left:-10%;} 40%,60%{left:50%;} 100%{left:110%;} }
+        @keyframes box { 0%,40%{top:-20%;} 60%{top:40%;left:52%;} 100%{top:40%;left:112%;} }
+        @keyframes txt1 { 0%{opacity:1;} 20%,100%{opacity:0;} }
+        @keyframes txt2 { 0%,80%{opacity:0;} 100%{opacity:1;} }
+      `}</style>
+      
+      <Navbar />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 flex-grow">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="flex flex-row gap-4 h-[500px]">
+            {product.images && product.images.length > 1 && (
+              <div className="flex flex-col gap-3">
+                {product.images.slice(0, 4).map((img, index) => (
+                  <button key={`${img}-${index}`} onClick={() => setSelectedImageIndex(index)} className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${selectedImageIndex === index ? 'border-red-500' : 'border-transparent hover:border-gray-400'}`}>
+                    <img src={img} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover"/>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex-grow">{product.images && product.images[selectedImageIndex] && (<img src={product.images[selectedImageIndex]} alt={product.name} className="w-full h-full object-cover rounded-lg shadow-lg"/>)}</div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg h-[500px] overflow-y-auto">
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{product.name}</h1>
+            <div className="flex items-center gap-2 mb-4">
+              <StarRating rating={averageRating} />
+              <span className="text-gray-600 font-medium">{averageRating} out of 5 ({reviews.length} ratings)</span>
+            </div>
+            <div className="flex items-baseline gap-2 mb-6">
+              <span className="text-4xl font-bold text-red-600">₹{displayPrice}</span>
+              {originalPrice && displayPrice < originalPrice && (<span className="text-2xl text-gray-500 line-through">₹{originalPrice}</span>)}
+            </div>
+            {product.variants?.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-800 mb-2">Select Size:</h3>
+                <div className="flex flex-wrap gap-2">{product.variants.map((variant) => (<button key={variant.size} onClick={() => setSelectedVariant(variant)} className={`px-4 py-2 border rounded-lg ${selectedVariant?.size === variant.size ? 'bg-red-600 text-white border-red-600' : 'hover:bg-gray-100'}`}>{variant.size}</button>))}</div>
+              </div>
+            )}
+            <div className="mb-6 flex items-center gap-2">{stockStatus === "out" ? (<><XCircle className="w-5 h-5 text-red-600" /><span className="font-semibold text-red-600">Out of Stock</span></>) : (<><CheckCircle className="w-5 h-5 text-green-600" /><span className="font-semibold text-green-600">In Stock</span></>)}</div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center border border-gray-300 rounded-md">
+                <button onClick={decrementQuantity} className="p-3 text-gray-500 hover:text-gray-800">-</button>
+                <span className="px-4 text-md font-medium text-gray-800">{quantity}</span>
+                <button onClick={incrementQuantity} className="p-3 text-gray-500 hover:text-gray-800">+</button>
+              </div>
+              <button ref={buttonRef} onClick={handleAddToCart} disabled={stockStatus !== "in"} className="cart-button disabled:opacity-50 disabled:cursor-not-allowed"><span className="add-to-cart">Add to Cart</span><span className="added">Added</span><i className="fas fa-shopping-cart"></i><i className="fas fa-box"></i></button>
+              <button onClick={handleWishlistToggle} className="p-3 bg-gray-200 rounded-lg hover:bg-gray-300"><Heart className={`w-6 h-6 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}/></button>
+            </div>
+          </div>
+        </div>
+        <div className="mt-12 space-y-8">
+            {product.description && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">Product Description</h2> <p className="text-gray-700 whitespace-pre-line">{product.description}</p> </div> )}
+            {product.benefits?.length > 0 && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">Benefits</h2> <ul className="list-disc list-inside text-gray-700 space-y-1"> {product.benefits.map((b, i) => ( <li key={i}>{b}</li> ))} </ul> </div> )}
+            {product.ingredientsBenefits?.length > 0 && ( <div className="bg-white p-6 rounded-lg shadow overflow-x-auto"> <h2 className="text-xl font-bold mb-2">Ingredients & Their Benefits</h2> <table className="w-full border border-gray-200"> <thead> <tr className="bg-gray-100 text-left"> <th className="p-2 border">Ingredient</th> <th className="p-2 border">Benefit</th> </tr> </thead> <tbody> {product.ingredientsBenefits.map((item, i) => ( <tr key={i} className="border-t"> <td className="p-2 border font-medium">{item.ingredient}</td> <td className="p-2 border">{item.benefit}</td> </tr> ))} </tbody> </table> </div> )}
+            {product.howToUse && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">How to Use</h2> <p className="text-gray-700 whitespace-pre-line">{product.howToUse}</p> </div> )}
+            {product.purityPackaging && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">Purity & Packaging</h2> <p className="text-gray-700 whitespace-pre-line">{product.purityPackaging}</p> </div> )}
+        </div>
+        
+        <div className="mt-12 bg-white p-8 rounded-lg shadow">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900">Customer Reviews</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="max-h-[500px] overflow-y-auto pr-4 space-y-6">{reviews.length > 0 ? (reviews.map(review => (<div key={review.id} className="border-b pb-4"><div className="flex items-center mb-2"><p className="font-bold text-gray-800 mr-4">{review.userName}</p><StarRating rating={review.rating} /></div><p className="text-gray-600">{review.comment}</p><p className="text-xs text-gray-400 mt-2">{review.createdAt ? new Date(review.createdAt.toDate()).toLocaleDateString() : 'Just now'}</p></div>))) : (<p className="text-gray-500">Be the first to review this product!</p>)}</div>
+            <div>
+              {isLoggedIn ? (
+                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                  <h3 className="text-xl font-semibold text-gray-800">Write a Review</h3>
+                  <div>
+                    <label htmlFor="review-name" className="block text-gray-700 font-medium mb-2">Your Name</label>
+                    <input id="review-name" type="text" value={newReviewName} onChange={(e) => setNewReviewName(e.target.value)} placeholder="Enter your name" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"/>
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">Your Rating</label>
+                    <div className="flex items-center" onMouseLeave={() => setHoverRating(0)}>{[1, 2, 3, 4, 5].map(star => (<Star key={star} className={`w-8 h-8 cursor-pointer transition-colors ${(hoverRating || newReviewRating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} onClick={() => setNewReviewRating(star)} onMouseEnter={() => setHoverRating(star)}/>))}</div>
+                  </div>
+                  <div>
+                    <label htmlFor="review-comment" className="block text-gray-700 font-medium mb-2">Your Review</label>
+                    <textarea id="review-comment" value={newReviewComment} onChange={handleCommentChange} rows="5" placeholder="Share your thoughts on the product..." className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"></textarea>
+                    <p className={`text-sm text-right mt-1 ${wordCount > MAX_WORDS ? 'text-red-500 font-bold' : 'text-gray-500'}`}>{wordCount} / {MAX_WORDS} words</p>
+                  </div>
+                  <button type="submit" disabled={reviewSubmitting || wordCount > MAX_WORDS} className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">{reviewSubmitting ? 'Submitting...' : 'Submit Review'}</button>
+                </form>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-8 rounded-lg"><p className="text-lg font-semibold text-gray-800">Want to share your thoughts?</p><p className="text-gray-600 mb-4 text-center">Please log in to write a review.</p><Link to="/login" className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors">Log In</Link></div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* --- ✅ FIX: Recommended Products Section --- */}
+        {recommendedProducts.length > 0 && (
+          <div className="mt-12">
+            {/* ✅ FIX 1: Centered the title */}
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">You Might Also Like</h2>
+            <div className="flex overflow-x-auto space-x-6 pb-4">
+              {recommendedProducts.map(recProduct => {
+                // ✅ FIX 2: Correctly get the price from variants or top-level field
+                const recommendedPrice = recProduct.variants?.[0]?.discountPrice ?? recProduct.variants?.[0]?.price ?? recProduct.price;
+                return (
+                  // ✅ FIX 4: Corrected link from "/products/" to "/product/"
+                  <Link to={`/products/${recProduct.id}`} key={recProduct.id} className="flex-shrink-0 w-64 group">
+                    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 group-hover:scale-105 h-full">
+                      <img src={recProduct.images?.[0]} alt={recProduct.name} className="w-full h-48 object-cover" />
+                      {/* ✅ FIX 3: Centered text content for name and price */}
+                      <div className="p-4 text-center">
+                        <h3 className="text-md font-semibold text-gray-800 truncate group-hover:text-red-600">{recProduct.name}</h3>
+                        {recommendedPrice && (
+                           <p className="text-lg font-bold text-red-500 mt-2">₹{recommendedPrice}</p>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </main>
+   
+    </div>
+  );
+};
+
+export default ProductDetailPage;
