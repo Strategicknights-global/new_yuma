@@ -70,6 +70,12 @@ const PopularProducts = ({ products, categories }) => {
   };
 
   const handleAddToCart = (product, buttonRef) => {
+    // ✅ Out of Stock Check
+    if (!product.inStock) {
+        showNotification(`${product.name} is currently out of stock`);
+        return;
+    }
+
     if (!isLoggedIn) {
       navigate("/login");
       return;
@@ -92,6 +98,12 @@ const PopularProducts = ({ products, categories }) => {
   };
 
   const handleBuyNow = (product) => {
+    // ✅ Out of Stock Check
+    if (!product.inStock) {
+        showNotification(`${product.name} is currently out of stock`);
+        return;
+    }
+      
     if (!isLoggedIn) {
       navigate("/login");
       return;
@@ -137,7 +149,11 @@ const PopularProducts = ({ products, categories }) => {
           overflow: hidden;
           font-size: 14px;
         }
-        .cart-button:hover {
+        .cart-button.disabled-out-of-stock {
+            background-color: #a0a0a0; /* Grey for out of stock */
+            cursor: not-allowed;
+        }
+        .cart-button:hover:not(.disabled-out-of-stock) {
           background-color: #02665e;
         }
         .cart-button:active {
@@ -172,6 +188,11 @@ const PopularProducts = ({ products, categories }) => {
         }
         .cart-button span.add-to-cart { opacity: 1; }
         .cart-button span.added { opacity: 0; }
+        .cart-button span.out-of-stock { opacity: 0; }
+        .cart-button.disabled-out-of-stock span.add-to-cart,
+        .cart-button.clicked span.add-to-cart { opacity: 0; }
+        .cart-button.disabled-out-of-stock span.out-of-stock { opacity: 1; }
+
 
         .cart-button.clicked .fa-shopping-cart {
           animation: cart 1.5s ease-in-out forwards;
@@ -248,6 +269,7 @@ const PopularProducts = ({ products, categories }) => {
             const price = getProductPrice(p);
             const isWishlisted = wishlist.includes(p.id);
             const buttonRef = useRef(null);
+            const isInStock = p.inStock; // ✅ Get inStock status
 
             return (
               <div
@@ -271,6 +293,13 @@ const PopularProducts = ({ products, categories }) => {
                     alt={p.name}
                     className="product-image w-full h-48 object-cover rounded-t-xl"
                   />
+                  {/* ✅ Out of Stock Badge */}
+                  {!isInStock && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                      Out of Stock
+                    </div>
+                  )}
+
                   <div className="p-4 text-center">
                     <h3 className="text-md font-semibold text-gray-800">
                       {p.name}
@@ -283,17 +312,30 @@ const PopularProducts = ({ products, categories }) => {
                   <button
                     ref={buttonRef}
                     onClick={() => handleAddToCart(p, buttonRef)}
-                    className="cart-button"
+                    disabled={!isInStock} // ✅ Disable if out of stock
+                    className={`cart-button ${!isInStock ? 'disabled-out-of-stock' : ''}`} // ✅ Add disabled class
                   >
-                    <span className="add-to-cart">Add to cart</span>
-                    <span className="added">Added</span>
-                    <i className="fas fa-shopping-cart"></i>
-                    <i className="fas fa-box"></i>
+                    {/* ✅ Conditional Button Text */}
+                    {isInStock ? (
+                        <>
+                            <span className="add-to-cart">Add to cart</span>
+                            <span className="added">Added</span>
+                            <i className="fas fa-shopping-cart"></i>
+                            <i className="fas fa-box"></i>
+                        </>
+                    ) : (
+                        <span className="out-of-stock">Out of Stock</span>
+                    )}
                   </button>
 
                   <button
                     onClick={() => handleBuyNow(p)}
-                    className="bg-[#b85a00] text-white px-4 py-2 rounded-lg hover:bg-[#944800] transition"
+                    disabled={!isInStock} // ✅ Disable if out of stock
+                    className={`text-white px-4 py-2 rounded-lg transition ${
+                        isInStock
+                            ? "bg-[#b85a00] hover:bg-[#944800]"
+                            : "bg-gray-400 cursor-not-allowed" // ✅ Greyed out if out of stock
+                    }`}
                   >
                     Buy Now
                   </button>
