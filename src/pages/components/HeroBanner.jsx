@@ -6,10 +6,8 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-fade";
 
-import img1 from "../../assets/image1.webp";
-import img2 from "../../assets/image2.jpg";
-import img3 from "../../assets/image3.jpg";
-import img4 from "../../assets/image4.jpg";
+import img1 from "../../assets/image1.png";
+import img2 from "../../assets/image2.png";
 import video2 from "../../assets/video2.mp4";
 
 const HeroBanner = () => {
@@ -20,7 +18,7 @@ const HeroBanner = () => {
     if (videoRef.current) {
       const handleEnded = () => {
         if (swiperRef.current) {
-          swiperRef.current.slideNext(); // move to next slide after first playthrough
+          swiperRef.current.slideNext();
         }
       };
       videoRef.current.addEventListener("ended", handleEnded);
@@ -65,6 +63,23 @@ const HeroBanner = () => {
             }}
           />
         </SwiperSlide>
+<style>
+{`
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: #57ba40 !important;
+  }
+
+  .swiper-pagination-bullet {
+    background: #d1d1d1 !important;
+    opacity: 1 !important;
+  }
+
+  .swiper-pagination-bullet-active {
+    background: #57ba40 !important;
+  }
+`}
+</style>
 
         {/* Image slides */}
         <SwiperSlide>
@@ -72,12 +87,6 @@ const HeroBanner = () => {
         </SwiperSlide>
         <SwiperSlide>
           <img src={img2} alt="Banner 2" className="w-full h-full object-cover" />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img src={img3} alt="Banner 3" className="w-full h-full object-cover" />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img src={img4} alt="Banner 4" className="w-full h-full object-cover" />
         </SwiperSlide>
       </Swiper>
     </section>

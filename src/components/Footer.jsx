@@ -4,7 +4,7 @@ import { MapPin, Mail, Instagram, Facebook, Youtube, Linkedin, Twitter } from "l
 import React from 'react';
 
 const Footer = () => (
-  <footer className="bg-gray-800 text-gray-300 py-10">
+  <footer className="bg-[#1a1a1a] text-gray-300 py-10">
     <div className="container mx-auto px-4 flex flex-col md:flex-row items-center md:items-start justify-between">
       
       <div className="mb-8 md:mb-0 text-center md:text-left">
@@ -29,7 +29,7 @@ const Footer = () => (
           <p className="text-sm">yumasfreshfood@gmail.com</p>
         </div>
 
-        <button className="bg-orange-500 text-white px-4 py-2 mt-4 rounded-lg flex items-center justify-center hover:bg-orange-600 transition-colors">
+        <button className="bg-[#57ba40] text-white px-4 py-2 mt-4 rounded-lg flex items-center justify-center hover:bg-orange-600 transition-colors">
           <a
             href="https://wa.me/919663208248"
             target="_blank"

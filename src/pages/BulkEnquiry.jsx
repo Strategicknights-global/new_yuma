@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { db } from "../../firebase";
-import coffee from "../assets/coffee.webp";
+import bulk from "../assets/bulk_enquiry1.png";
 import Navbar from "../components/Navbar";
 
 const BulkEnquiry = () => {
@@ -16,7 +16,7 @@ const BulkEnquiry = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [phoneError, setPhoneError] = useState(""); // phone validation error
+  const [phoneError, setPhoneError] = useState("");
 
   // Captcha state
   const [captchaNums, setCaptchaNums] = useState({ num1: 0, num2: 0 });
@@ -108,13 +108,13 @@ const BulkEnquiry = () => {
       <div className="flex items-center justify-center p-6">
         <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden">
           {/* Left Side - Image */}
-          <div className="w-full md:w-1/2 bg-green-50 flex items-center justify-center p-6">
-            <img
-              src={coffee}
-              alt="Bulk Enquiry Banner"
-              className="rounded-xl shadow-lg object-cover"
-            />
-          </div>
+          <img
+            src={bulk}
+            alt="Bulk Enquiry Banner"
+            className="w-full md:w-1/2 bg-green-50 flex items-center justify-center 
+             rounded-xl shadow-lg object-cover"
+          />
+
 
           {/* Right Side - Form */}
           <div className="w-full md:w-1/2 p-10 flex flex-col justify-center">
@@ -173,9 +173,8 @@ const BulkEnquiry = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       required
-                      className={`w-full border ${
-                        phoneError ? "border-red-500" : "border-gray-300"
-                      } rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none`}
+                      className={`w-full border ${phoneError ? "border-red-500" : "border-gray-300"
+                        } rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none`}
                     />
                     {phoneError && (
                       <p className="text-red-600 text-sm mt-1">{phoneError}</p>

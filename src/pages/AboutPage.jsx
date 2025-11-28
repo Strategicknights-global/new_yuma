@@ -49,11 +49,11 @@ const AboutPage = () => {
       ) : (
         <>
           {/* Hero Section */}
-          <div className="relative bg-orange-700">
+          <div className="relative">
             <img
               src={config?.aboutUsBannerImage || "/food_banner.png"}
               alt="Our Team"
-              className="w-full h-full object-cover opacity-40"
+              className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4">
               <h1 className="text-5xl font-extrabold text-white">
@@ -66,9 +66,9 @@ const AboutPage = () => {
           </div>
 
           {/* Our Story Section with 3D Gallery */}
-          <section className="py-20 bg-orange-100">
+          <section className="py-20 bg-[#ffffff]">
             <div className="max-w-6xl mx-auto px-4 text-center">
-              <h2 className="text-3xl font-bold text-orange-900 mb-8">
+              <h2 className="text-3xl font-bold text-[#57ba40] mb-8">
                 Our Story
               </h2>
         
@@ -89,27 +89,27 @@ const AboutPage = () => {
           </section>
 
           {/* Mission & Values */}
-          <section className="py-20">
+          <section className="py-20 bg-[#ffffff]">
             <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
               <div className="flex flex-col items-center">
-                <Target className="w-12 h-12 text-orange-600 mb-4" />
+                <Target className="w-12 h-12 text-[#57ba40] mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Our Mission</h3>
-                <p className="text-orange-700">
+                <p className="text-[#000000]">
                   {config?.ourMission || "Our mission..."}
                 </p>
               </div>
               <div className="flex flex-col items-center">
-                <Award className="w-12 h-12 text-orange-600 mb-4" />
+                <Award className="w-12 h-12 text-[#57ba40] mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Our Values</h3>
-                <p className="text-orange-700">
+                <p className="text-[#000000]">
                   Quality, authenticity, and customer satisfaction are at the
                   heart of everything we do.
                 </p>
               </div>
               <div className="flex flex-col items-center">
-                <Users className="w-12 h-12 text-orange-600 mb-4" />
+                <Users className="w-12 h-12 text-[#57ba40] mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Our Community</h3>
-                <p className="text-orange-700">
+                <p className="text-[#000000]">
                   We are proud to support local farmers and build a community
                   around healthy, traditional foods.
                 </p>

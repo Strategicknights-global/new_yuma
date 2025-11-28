@@ -177,18 +177,18 @@ const ProductPage = () => {
   const FilterPanel = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="font-semibold mb-3 text-lg text-orange-900">Categories</h3>
+        <h3 className="font-semibold mb-3 text-lg text-[#000000]">Categories</h3>
         <div className="space-y-2">
           {categories.map((cat) => (
             <label
               key={cat.id}
-              className="flex items-center space-x-2 cursor-pointer text-orange-800"
+              className="flex items-center space-x-2 cursor-pointer text-[#000000]"
             >
               <input
                 type="checkbox"
                 checked={activeCategories.includes(cat.id)}
                 onChange={() => handleCategoryToggle(cat.id)}
-                className="rounded text-orange-600 focus:ring-orange-500"
+                className="rounded text-orange-600 focus:ring-[#57ba40]"
               />
               <span>{cat.name}</span>
             </label>
@@ -196,11 +196,11 @@ const ProductPage = () => {
         </div>
       </div>
       <div>
-        <h3 className="font-semibold mb-3 text-lg text-orange-900">Sort By</h3>
+        <h3 className="font-semibold mb-3 text-lg text-[#000000]">Sort By</h3>
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
-          className="w-full p-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-orange-800"
+          className="w-full p-2 border border-[#57ba40] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#000000] bg-white text-[#000000]"
         >
           <option value="top-sales">Top Sales</option>
           <option value="price-asc">Price: Low to High</option>
@@ -210,7 +210,7 @@ const ProductPage = () => {
       </div>
       <button
         onClick={handleClearFilters}
-        className="w-full py-2 bg-orange-200 text-orange-800 rounded-lg hover:bg-orange-300 transition-colors"
+        className="w-full py-2 bg-[#57ba40] text-[#ffffff] rounded-lg hover:bg-[#222222] transition-colors"
       >
         Clear All Filters
       </button>
@@ -221,7 +221,7 @@ const ProductPage = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <div className="min-h-screen flex items-center justify-center bg-[#ffffff]">
           <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </>
@@ -231,14 +231,14 @@ const ProductPage = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center bg-orange-100 text-red-600 font-semibold p-8 text-center">
+        <div className="min-h-screen flex items-center justify-center bg-[#ffffff] text-red-600 font-semibold p-8 text-center">
           {error}
         </div>
       </>
     );
 
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col">
+    <div className="min-h-screen bg-[#ffffff] flex flex-col">
       <Navbar />
 
       {notification && (
@@ -249,12 +249,14 @@ const ProductPage = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[200]">
+        <div className="fixed inset-0 flex items-center justify-center 
+    bg-black/50 backdrop-blur-sm z-[200]">
+
           <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm w-full">
-            <h2 className="text-xl font-semibold text-orange-800 mb-4">
+            <h2 className="text-xl font-semibold text-[#000000] mb-4">
               You are not logged in
             </h2>
-            <p className="text-orange-600 mb-6">Please login to continue</p>
+            <p className="text-[#000000] mb-6">Please login to continue</p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => setShowLoginModal(false)}
@@ -264,7 +266,7 @@ const ProductPage = () => {
               </button>
               <button
                 onClick={() => navigate("/login")}
-                className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700"
+                className="px-4 py-2 rounded-lg bg-[#57ba40] text-white hover:bg-[#222222]"
               >
                 Login
               </button>
@@ -274,14 +276,14 @@ const ProductPage = () => {
       )}
 
       <main className="flex-grow">
-        <div className="bg-orange-100 py-3 border-b border-orange-200">
+        <div className="bg-[#ffffff] py-3">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center text-sm text-orange-600">
-              <Link to="/" className="hover:text-orange-700">
+            <div className="flex items-center text-sm text-[#57ba40] font-bold">
+              <Link to="/" className="hover:text-[#57ba40]">
                 Home
               </Link>
               <span className="mx-2">/</span>
-              <span className="font-semibold text-orange-800">Products</span>
+              <span className="font-semibold text-[#000000]">Products</span>
             </div>
           </div>
         </div>
@@ -289,7 +291,7 @@ const ProductPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="lg:grid lg:grid-cols-4 lg:gap-8">
             {/* Sidebar */}
-            <aside className="hidden lg:block lg:col-span-1 bg-orange-100 p-6 rounded-lg shadow-sm h-fit">
+            <aside className="hidden lg:block lg:col-span-1 bg-[#ffffff] p-6 rounded-lg shadow-sm h-fit">
               <FilterPanel />
             </aside>
 
@@ -303,9 +305,9 @@ const ProductPage = () => {
                     placeholder="Search for products..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-orange-800"
+                    className="w-full px-4 py-2 border border-[#57ba40] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#000000] bg-white text-[#000000]"
                   />
-                  <Search className="absolute right-3 top-2.5 w-5 h-5 text-orange-400" />
+                  <Search className="absolute right-3 top-2.5 w-5 h-5 text-[#000000]" />
                 </div>
 
                 {/* Mobile Filters */}
@@ -323,7 +325,7 @@ const ProductPage = () => {
               </div>
 
               {showFilters && (
-                <div className="lg:hidden bg-orange-100 p-6 rounded-lg shadow-sm mb-6">
+                <div className="lg:hidden bg-[#ffffff] p-6 rounded-lg shadow-sm mb-6">
                   <FilterPanel />
                 </div>
               )}
@@ -359,7 +361,7 @@ const ProductPage = () => {
                               )}
                             </div>
 
-                            <h3 className="font-semibold text-orange-800 mb-2 flex-grow">
+                            <h3 className="font-semibold text-[#000000] mb-2 flex-grow">
                               {p.name}
                             </h3>
 
@@ -378,7 +380,7 @@ const ProductPage = () => {
                               {isComplex ? (
                                 <button
                                   onClick={() => handleViewDetails(p.id)}
-                                  className="w-full text-center bg-orange-500 text-white py-2 px-4 rounded font-semibold hover:bg-orange-600 text-sm"
+                                  className="w-full text-center bg-[#57ba40] text-white py-2 px-4 rounded font-semibold hover:bg-[#222222] text-sm"
                                 >
                                   View Details
                                 </button>
@@ -394,7 +396,7 @@ const ProductPage = () => {
                                   disabled={!p.inStock}
                                   className={`flex-1 py-2 px-4 rounded font-semibold text-sm transition-colors ${
                                     p.inStock
-                                      ? "bg-yellow-400 text-gray-900 hover:bg-yellow-500"
+                                      ? "bg-[#57ba40] text-[#ffffff] hover:bg-[#222222]"
                                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                   }`}
                                 >
@@ -412,36 +414,36 @@ const ProductPage = () => {
                   <div className="flex justify-center items-center space-x-4">
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      className="flex items-center px-4 py-2 bg-orange-100 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-200 disabled:opacity-50"
+                      className="flex items-center px-4 py-2 text-orange-700 rounded-lg disabled:opacity-50"
                       disabled={currentPage === 1}
                     >
-                      <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                      <ChevronLeft className="w-4 h-4 mr-1" /> 
                     </button>
-                    <span className="text-orange-700 font-medium">
+                    <span className="text-[#57ba40] font-medium">
                       Page {currentPage} of {totalPages || 1}
                     </span>
                     <button
                       onClick={() =>
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
-                      className="flex items-center px-4 py-2 bg-orange-100 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-200 disabled:opacity-50"
+                      className="flex items-center px-4 py-2 text-orange-700 rounded-lg disabled:opacity-50"
                       disabled={currentPage >= totalPages || totalPages === 0}
                     >
-                      <ChevronRight className="w-4 h-4 ml-1" /> Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
                     </button>
                   </div>
                 </>
               ) : (
-                <div className="text-center py-16 bg-orange-100 rounded-lg shadow-sm">
-                  <h2 className="text-2xl font-semibold text-orange-800">
+                <div className="text-center py-16 bg-[#ffffff] rounded-lg shadow-sm border border-[#57ba40]">
+                    <h2 className="text-2xl font-semibold text-[#000000]">
                     No Products Found
                   </h2>
-                  <p className="text-orange-600 mt-2">
+                  <p className="text-[#000000] mt-2">
                     Try adjusting your search or filters.
                   </p>
                   <button
                     onClick={handleClearFilters}
-                    className="mt-6 px-6 py-2 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+                    className="mt-6 px-6 py-2 bg-[#57ba40] text-white font-semibold rounded-lg hover:bg-[#222222] transition-colors"
                   >
                     Clear Filters
                   </button>

@@ -256,7 +256,7 @@ const CheckoutPage = () => {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6  ">
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-gray-600 mb-6">
           <Link to="/" className="hover:text-red-600">
@@ -268,7 +268,7 @@ const CheckoutPage = () => {
 
         <form
           onSubmit={handlePlaceOrder}
-          className="lg:grid lg:grid-cols-3 lg:gap-8 items-start"
+          className="lg:grid lg:grid-cols-3 lg:gap-8 min-h-screen flex items-center justify-center"
         >
           {/* Shipping Details */}
           <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md space-y-4">

@@ -5,7 +5,7 @@ const offers = [
   {
     text: (
       <>
-        ⚡ <span className="text-red-600 font-bold">20% OFF</span> Your First Order! Use Code FIRST20
+      <span style={{ color: '#ffffff' }}>⚡</span> <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">20% OFF</span> <span className="font-['poppins'] font-bold text-[#000000] ">Your First Order! Use Code</span><span style={{color:"#ffffff",fontStyle:"bold",marginLeft:"4px"}}>FIRST20</span>
       </>
     ),
     link: "/products?offer=FIRST20",
@@ -13,7 +13,7 @@ const offers = [
   {
     text: (
       <>
-        🚚 <span className="text-blue-700 font-bold">FREE SHIPPING</span> on Orders Over ₹500! 🎉
+        🚚 <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">FREE SHIPPING</span> <span className="text-black">on Orders Over</span><span className="text-white"> ₹500! </span>🎉
       </>
     ),
     link: "/products?offer=FREESHIP",
@@ -21,7 +21,7 @@ const offers = [
   {
     text: (
       <>
-        ⏰ <span className="text-green-100 font-bold">Limited Time Offer!</span> Shop Now! ⭐
+        ⏰ <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">Limited Time Offer!</span> Shop Now! ⭐
       </>
     ),
     link: "/products?offer=LIMITEDTIME",
@@ -30,8 +30,7 @@ const offers = [
 
 const OfferBanner = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const ANIMATION_MS = 12000; // 12s per line
-
+  const ANIMATION_MS = 12000; 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % offers.length);
@@ -41,10 +40,10 @@ const OfferBanner = () => {
 
   return (
     <>
-      <div className="w-full bg-yellow-200 overflow-hidden fixed top-0 left-0 z-50 border-b border-green-200 h-14">
+      <div className="w-full bg-[#57ba40] overflow-hidden fixed top-0 left-0 z-50 border-b border-green-200 h-14">
         <div
           key={currentIndex}
-          className="marquee-item text-brown-800 font-semibold text-lg"
+          className="marquee-item text-[#3D2817] font-['Poppins']  font-semibold text-lg"
         >
           <Link to={offers[currentIndex].link} className="inline-block px-4">
             {offers[currentIndex].text}

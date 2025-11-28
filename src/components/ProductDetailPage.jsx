@@ -301,12 +301,12 @@ const ProductDetailPage = () => {
       )}
 
       <style>{`
-        .cart-button { position: relative; padding: 10px; width: 160px; height: 48px; border: 0; border-radius: 10px; background-color: #f0c242; outline: none; cursor: pointer; color: #fff; transition: .3s ease-in-out; overflow: hidden; font-size: 15px; font-weight: 600; }
-        .cart-button:hover { background-color: #e0b034; }
+        .cart-button { position: relative; padding: 10px; width: 160px; height: 48px; border: 1px solid #57ba40; border-radius: 10px; background-color:#ffffff ; outline: none; cursor: pointer; color: #fff; transition: .3s ease-in-out; overflow: hidden; font-size: 15px; font-weight: 600; }
+        .cart-button:hover { background-color: #57ba40; color: #ffffff}
         .cart-button:active { transform: scale(.9); }
         .cart-button .fa-shopping-cart { position: absolute; z-index: 2; top: 50%; left: -10%; font-size: 1.4em; transform: translate(-50%,-50%); color: #fff; }
         .cart-button .fa-box { position: absolute; z-index: 3; top: -20%; left: 52%; font-size: 1em; transform: translate(-50%,-50%); color: #fff; }
-        .cart-button span { position: absolute; z-index: 3; left: 50%; top: 50%; font-size: 0.95em; color: #fff; transform: translate(-50%,-50%); }
+        .cart-button span { position: absolute; z-index: 3; left: 50%; top: 50%; font-size: 0.95em; color: #57ba40; transform: translate(-50%,-50%); }
         .cart-button span.add-to-cart { opacity: 1; }
         .cart-button span.added { opacity: 0; }
         .cart-button.clicked .fa-shopping-cart { animation: cart 1.5s ease-in-out forwards; }
@@ -317,6 +317,10 @@ const ProductDetailPage = () => {
         @keyframes box { 0%,40%{top:-20%;} 60%{top:40%;left:52%;} 100%{top:40%;left:112%;} }
         @keyframes txt1 { 0%{opacity:1;} 20%,100%{opacity:0;} }
         @keyframes txt2 { 0%,80%{opacity:0;} 100%{opacity:1;} }
+        .cart-button:hover span {
+  color: #ffffff !important;
+}
+
       `}</style>
       
       <Navbar />

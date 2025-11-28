@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
+import signbackground from "../assets/sign_background.png"
+
 
 // Icons
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
@@ -83,14 +85,26 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100"
+     style={{
+    backgroundImage: `url(${signbackground})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  }}
+    
+    
+    >
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
 
         <div className="text-center">
           <Link to="/">
-            <div className="mx-auto w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl">Y</span>
-            </div>
+           <img
+  src="/Yuma foods logo.png"
+  alt="Logo"
+  className="mx-auto w-40 h-40 rounded-full object-cover"
+/>
+
           </Link>
 
           <h2 className="mt-4 text-2xl font-bold text-gray-900">

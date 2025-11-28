@@ -151,8 +151,8 @@ const ProfilePage = () => {
           {/* Profile Details + Address */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-red-600" />
+              <div className="w-16 h-16 bg-[#57ba40] rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-[#ffffff]" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
@@ -202,7 +202,7 @@ const ProfilePage = () => {
                     <button
                       onClick={saveAddress}
                       disabled={saving}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                      className="px-4 py-2 bg-[#57ba40] text-white rounded-md hover:bg-[#222222]"
                     >
                       {saving ? "Saving..." : "Save"}
                     </button>
@@ -327,7 +327,7 @@ const ProfilePage = () => {
 
               <button
                 type="submit"
-                className="w-full py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="w-full py-2 bg-[#57ba40] text-white rounded-md hover:bg-[#222222]"
               >
                 Update Password
               </button>

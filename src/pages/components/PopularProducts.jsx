@@ -72,8 +72,8 @@ const PopularProducts = ({ products, categories }) => {
   const handleAddToCart = (product, buttonRef) => {
     // ✅ Out of Stock Check
     if (!product.inStock) {
-        showNotification(`${product.name} is currently out of stock`);
-        return;
+      showNotification(`${product.name} is currently out of stock`);
+      return;
     }
 
     if (!isLoggedIn) {
@@ -82,11 +82,15 @@ const PopularProducts = ({ products, categories }) => {
     }
 
     const variant =
-      product.variants && product.variants.length > 0 ? product.variants[0] : null;
+      product.variants && product.variants.length > 0
+        ? product.variants[0]
+        : null;
 
     addToCart(product, 1, variant);
 
-    const displayName = variant ? `${product.name} (${variant.size})` : product.name;
+    const displayName = variant
+      ? `${product.name} (${variant.size})`
+      : product.name;
     showNotification(`${displayName} added to cart`);
 
     if (buttonRef && buttonRef.current) {
@@ -100,21 +104,25 @@ const PopularProducts = ({ products, categories }) => {
   const handleBuyNow = (product) => {
     // ✅ Out of Stock Check
     if (!product.inStock) {
-        showNotification(`${product.name} is currently out of stock`);
-        return;
+      showNotification(`${product.name} is currently out of stock`);
+      return;
     }
-      
+
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
 
     const variant =
-      product.variants && product.variants.length > 0 ? product.variants[0] : null;
+      product.variants && product.variants.length > 0
+        ? product.variants[0]
+        : null;
 
     addToCart(product, 1, variant);
 
-    const displayName = variant ? `${product.name} (${variant.size})` : product.name;
+    const displayName = variant
+      ? `${product.name} (${variant.size})`
+      : product.name;
     showNotification(`${displayName} added to cart`);
 
     setTimeout(() => navigate("/cart"), 800);
@@ -139,22 +147,18 @@ const PopularProducts = ({ products, categories }) => {
           padding: 10px;
           width: 140px;
           height: 44px;
-          border: 0;
+          border: 2px solid #57ba40;
           border-radius: 10px;
-          background-color: #01796f;
+          background-color: #ffffff;
           outline: none;
           cursor: pointer;
-          color: #fff;
+          color: #57ba40;
           transition: .3s ease-in-out;
           overflow: hidden;
           font-size: 14px;
         }
-        .cart-button.disabled-out-of-stock {
-            background-color: #a0a0a0; /* Grey for out of stock */
-            cursor: not-allowed;
-        }
-        .cart-button:hover:not(.disabled-out-of-stock) {
-          background-color: #02665e;
+        .cart-button:hover {
+          background-color: #f0fdf4;
         }
         .cart-button:active {
           transform: scale(.9);
@@ -166,7 +170,7 @@ const PopularProducts = ({ products, categories }) => {
           left: -10%;
           font-size: 1.2em;
           transform: translate(-50%,-50%);
-          color: #fff;
+          color: #57ba40;
         }
         .cart-button .fa-box {
           position: absolute;
@@ -175,7 +179,7 @@ const PopularProducts = ({ products, categories }) => {
           left: 52%;
           font-size: 0.9em;
           transform: translate(-50%,-50%);
-          color: #fff;
+          color: #57ba40;
         }
         .cart-button span {
           position: absolute;
@@ -183,16 +187,11 @@ const PopularProducts = ({ products, categories }) => {
           left: 50%;
           top: 50%;
           font-size: 0.9em;
-          color: #fff;
+          color: #57ba40;
           transform: translate(-50%,-50%);
         }
         .cart-button span.add-to-cart { opacity: 1; }
         .cart-button span.added { opacity: 0; }
-        .cart-button span.out-of-stock { opacity: 0; }
-        .cart-button.disabled-out-of-stock span.add-to-cart,
-        .cart-button.clicked span.add-to-cart { opacity: 0; }
-        .cart-button.disabled-out-of-stock span.out-of-stock { opacity: 1; }
-
 
         .cart-button.clicked .fa-shopping-cart {
           animation: cart 1.5s ease-in-out forwards;
@@ -234,19 +233,59 @@ const PopularProducts = ({ products, categories }) => {
           transform: scale(1.05);
           box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
+          /* 🔴 Disabled Out of Stock Button */
+.cart-button.disabled-out-of-stock {
+  border: 2px solid #ff0000 !important;
+  background-color: #ffe5e5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.cart-button.disabled-out-of-stock span,
+.cart-button.disabled-out-of-stock i {
+  color: #ff0000 !important;
+  opacity: 1 !important;
+}
+
+/* Hide animations when disabled */
+.cart-button.disabled-out-of-stock.clicked .fa-shopping-cart,
+.cart-button.disabled-out-of-stock.clicked .fa-box,
+.cart-button.disabled-out-of-stock.clicked span.add-to-cart,
+.cart-button.disabled-out-of-stock.clicked span.added {
+  animation: none !important;
+}
+.cart-button span.out-of-stock {
+  white-space: nowrap !important;
+  font-size: 0.85em;
+}
+
       `}</style>
 
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-green-400 via-green-500 to-green-700 bg-clip-text text-transparent animate-gradient">
-  Popular Products
-</h2>
-
+        <div className="text-center mb-12">
+          <div className="flex flex-col items-center gap-4">
+            <h2 className="font-['Poppins'] font-sans font-medium text-[#07602e] text-5xl md:text-6xl  relative">
+              Popular Products
+            </h2>
+          </div>
+        </div>
+        <style>{` 
+  @keyframes gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .animate-gradient {
+    animation: gradient 3s ease infinite;
+  }
+`}</style>
 
         <div className="flex justify-center mb-8 space-x-4 flex-wrap">
           <button
             onClick={() => setActiveCategory("All")}
             className={`px-4 py-2 rounded-lg ${
-              activeCategory === "All" ? "bg-[#01796f] text-white" : "bg-gray-200"
+              activeCategory === "All"
+                ? "bg-[#00a63e] text-white"
+                : "bg-white border border-[#57ba40]"
             }`}
           >
             All
@@ -256,7 +295,9 @@ const PopularProducts = ({ products, categories }) => {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`px-4 py-2 rounded-lg ${
-                activeCategory === cat.id ? "bg-[#01796f] text-white" : "bg-gray-200"
+                activeCategory === cat.id
+                  ? "bg-[#00a63e] text-white"
+                  : "bg-white border border-[#57ba40]"
               }`}
             >
               {cat.name}
@@ -264,7 +305,8 @@ const PopularProducts = ({ products, categories }) => {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+
           {filteredProducts.slice(0, 8).map((p) => {
             const price = getProductPrice(p);
             const isWishlisted = wishlist.includes(p.id);
@@ -272,17 +314,20 @@ const PopularProducts = ({ products, categories }) => {
             const isInStock = p.inStock; // ✅ Get inStock status
 
             return (
-              <div
-                key={p.id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative"
-              >
+             <div
+  key={p.id}
+  className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative w-full max-w-[300px] mx-auto"
+>
+
                 <button
                   onClick={() => handleWishlistToggle(p)}
                   className="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:bg-gray-100 transition"
                 >
                   <Heart
                     className={`w-5 h-5 ${
-                      isWishlisted ? "text-red-500 fill-red-500" : "text-gray-500"
+                      isWishlisted
+                        ? "text-red-500 fill-red-500"
+                        : "text-gray-500"
                     }`}
                   />
                 </button>
@@ -304,38 +349,41 @@ const PopularProducts = ({ products, categories }) => {
                     <h3 className="text-md font-semibold text-gray-800">
                       {p.name}
                     </h3>
-                    <div className="text-xl font-bold text-[#b85a00]">₹{price}</div>
+                    <div className="text-xl font-bold text-[#b85a00]">
+                      ₹{price}
+                    </div>
                   </div>
                 </Link>
 
                 <div className="flex justify-center space-x-2 p-4">
                   <button
-                    ref={buttonRef}
-                    onClick={() => handleAddToCart(p, buttonRef)}
-                    disabled={!isInStock} // ✅ Disable if out of stock
-                    className={`cart-button ${!isInStock ? 'disabled-out-of-stock' : ''}`} // ✅ Add disabled class
-                  >
-                    {/* ✅ Conditional Button Text */}
+  ref={buttonRef}
+  onClick={() => handleAddToCart(p, buttonRef)}
+  disabled={!isInStock}
+  className={`cart-button ${!isInStock ? "disabled-out-of-stock" : ""}`}
+>
+
                     {isInStock ? (
-                        <>
-                            <span className="add-to-cart">Add to cart</span>
-                            <span className="added">Added</span>
-                            <i className="fas fa-shopping-cart"></i>
-                            <i className="fas fa-box"></i>
-                        </>
+                      <>
+                        <span className="add-to-cart">Add to cart</span>
+                        <span className="added">Added</span>
+                        <i className="fas fa-shopping-cart"></i>
+                        <i className="fas fa-box"></i>
+                      </>
                     ) : (
-                        <span className="out-of-stock">Out of Stock</span>
+                      <span className="out-of-stock">Out of Stock</span>
                     )}
                   </button>
 
                   <button
                     onClick={() => handleBuyNow(p)}
-                    disabled={!isInStock} // ✅ Disable if out of stock
-                    className={`text-white px-4 py-2 rounded-lg transition ${
-                        isInStock
-                            ? "bg-[#b85a00] hover:bg-[#944800]"
-                            : "bg-gray-400 cursor-not-allowed" // ✅ Greyed out if out of stock
-                    }`}
+                    disabled={!isInStock}
+                    className={`text-white px-4 py-2 rounded-lg transition 
+    ${
+      isInStock
+        ? "bg-[#57ba40] hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40] hover:text-[#57ba40]"
+        : "bg-gray-400 cursor-not-allowed"
+    }`}
                   >
                     Buy Now
                   </button>

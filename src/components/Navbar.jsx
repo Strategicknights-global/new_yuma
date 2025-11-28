@@ -13,7 +13,7 @@ const navLinks = [
   { to: '/bulk-enquiry', label: 'Bulk Enquiry' },
 ];
 
-const OFFER_BAR_HEIGHT = 56; // OfferBanner height in px
+const OFFER_BAR_HEIGHT = 56;
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -151,7 +151,7 @@ const Navbar = () => {
           <Link to="/cart" className="relative p-2 rounded-full">
             <ShoppingCart className={`w-6 h-6 ${iconColor}`} />
             {totalCartItems > 0 && (
-              <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {totalCartItems}
               </span>
             )}

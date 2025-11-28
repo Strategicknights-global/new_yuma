@@ -69,7 +69,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col">
+    <div className="min-h-screen bg-[#ffffff] flex flex-col">
       <Navbar />
 
       {notification && (
@@ -91,7 +91,7 @@ const ContactPage = () => {
           alt="Healthy food background"
           className="w-full h-[350px] object-cover"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="absolute inset-0"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
           <h1 className="text-4xl font-extrabold text-white drop-shadow-lg">
             Get In Touch
@@ -106,15 +106,15 @@ const ContactPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex-grow">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
           {/* Contact Form */}
-          <div className="bg-orange-100 p-8 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-orange-900 mb-6">
+          <div className="bg-[#ffffff] p-8 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-[#000000] mb-6">
               Send us a message
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-orange-700"
+                  className="block text-sm font-medium text-[#000000]"
                 >
                   Full Name
                 </label>
@@ -125,13 +125,13 @@ const ContactPage = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-orange-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  className="mt-1 block w-full px-3 py-2 border border-[#000000] rounded-md shadow-sm focus:ring-[#57ba40] focus:border-[#57ba40]"
                 />
               </div>
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-orange-700"
+                  className="block text-sm font-medium text-[#000000]"
                 >
                   Email Address
                 </label>
@@ -142,13 +142,13 @@ const ContactPage = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-orange-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  className="mt-1 block w-full px-3 py-2 border border-border-[#000000] rounded-md shadow-sm focus:ring-[#57ba40] focus:border-[#57ba40]"
                 />
               </div>
               <div>
                 <label
                   htmlFor="message"
-                  className="block text-sm font-medium text-orange-700"
+                  className="block text-sm font-medium text-[#000000]"
                 >
                   Message
                 </label>
@@ -159,13 +159,13 @@ const ContactPage = () => {
                   value={formData.message}
                   onChange={handleInputChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-orange-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 resize-none"
+                  className="mt-1 block w-full px-3 py-2 border border-[#000000] rounded-md shadow-sm focus:ring-[#57ba40] focus:border-[#57ba40]resize-none"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-orange-600 text-white py-3 rounded-md font-semibold hover:bg-orange-700 transition-colors disabled:opacity-50"
+                className="w-full bg-[#57ba40] text-white py-3 rounded-md font-semibold hover:bg-[#222222] transition-colors disabled:opacity-50"
               >
                 {loading ? "Sending..." : "Send Message"}
               </button>
@@ -174,26 +174,26 @@ const ContactPage = () => {
 
           {/* Contact Info */}
           <div className="space-y-8">
-            <div className="bg-orange-100 p-8 rounded-lg shadow-lg">
-              <h3 className="text-xl font-bold text-orange-900 mb-4">
+            <div className="bg-[#ffffff] p-8 rounded-lg shadow-lg">
+              <h3 className="text-xl font-bold text-[#000000] mb-4">
                 Contact Information
               </h3>
-              <p className="text-orange-700">
+              <p className="text-[#000000]">
                 <strong>Address:</strong>{" "}
                 {siteConfig?.footerInfo?.address ||
                   "123 Street Address, Old Nagar, Sample City – 123456"}
               </p>
-              <p className="text-orange-700 mt-2">
+              <p className="text-[#000000] mt-2">
                 <strong>Email:</strong>{" "}
                 {siteConfig?.footerInfo?.email || "info@yumas.com"}
               </p>
-              <p className="text-orange-700 mt-2">
+              <p className="text-[#000000] mt-2">
                 <strong>Phone:</strong>{" "}
                 {siteConfig?.footerInfo?.phone || "+91 98765 43210"}
               </p>
             </div>
-            <div className="bg-orange-100 p-8 rounded-lg shadow-lg">
-              <h3 className="text-xl font-bold text-orange-900 mb-4">
+            <div className="bg-[#ffffff] p-8 rounded-lg shadow-lg">
+              <h3 className="text-xl font-bold text-[#000000] mb-4">
                 Follow Us
               </h3>
               <div className="flex space-x-4">
@@ -201,7 +201,7 @@ const ContactPage = () => {
                   href={siteConfig?.footerInfo?.socials?.instagram || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-orange-700 hover:text-pink-600"
+                  className="text-[#57ba40] hover:text-pink-600"
                 >
                   <Instagram size={24} />
                 </a>
@@ -209,7 +209,7 @@ const ContactPage = () => {
                   href={siteConfig?.footerInfo?.socials?.facebook || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-orange-700 hover:text-blue-600"
+                  className="text-[#57ba40] hover:text-blue-600"
                 >
                   <Facebook size={24} />
                 </a>
@@ -217,7 +217,7 @@ const ContactPage = () => {
                   href={siteConfig?.footerInfo?.socials?.youtube || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-orange-700 hover:text-red-600"
+                  className="text-[#57ba40] hover:text-red-600"
                 >
                   <Youtube size={24} />
                 </a>
@@ -225,7 +225,7 @@ const ContactPage = () => {
                   href={siteConfig?.footerInfo?.socials?.twitter || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-orange-700 hover:text-blue-500"
+                  className="text-[#57ba40] hover:text-blue-500"
                 >
                   <Twitter size={24} />
                 </a>

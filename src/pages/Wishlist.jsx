@@ -69,7 +69,7 @@ const Wishlist = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <div className="min-h-screen flex items-center justify-center bg-[#ffffff">
           <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </>
@@ -77,10 +77,10 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col">
+    <div className="min-h-screen bg-[#ffffff] flex flex-col">
       <Navbar />
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-orange-900 mb-8">My Wishlist</h1>
+        <h1 className="text-3xl font-bold text-[#57ba40] mb-8 text-center">My Wishlist</h1>
 
         {wishlistProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -127,7 +127,7 @@ const Wishlist = () => {
                     <div className="flex space-x-2 mt-auto">
                       <Link
                         to={`/products/${p.id}`}
-                        className="flex-1 text-center bg-orange-500 text-white py-2 px-4 rounded font-semibold hover:bg-orange-600 text-sm"
+                        className="flex-1 text-center bg-[#57ba40] text-white py-2 px-4 rounded font-semibold hover:bg-[#222222] text-sm"
                       >
                         View Details
                       </Link>
@@ -145,16 +145,16 @@ const Wishlist = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-16 bg-orange-100 rounded-lg shadow-sm">
-            <h2 className="text-2xl font-semibold text-orange-800">
+          <div className="text-center py-16 bg-[#ffffff] rounded-lg shadow-sm px-4 border border-[#57ba40]">
+            <h2 className="text-2xl font-semibold text-[#000000]">
               Your Wishlist is Empty
             </h2>
-            <p className="text-orange-600 mt-2">
+            <p className="text-[#000000] mt-2">
               Browse products and add them to your wishlist.
             </p>
             <Link
               to="/products"
-              className="mt-6 inline-block px-6 py-2 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+              className="mt-6 inline-block px-6 py-2 bg-[#57ba40] text-white font-semibold rounded-lg hover:bg-[#222222] transition-colors"
             >
               Shop Now
             </Link>
