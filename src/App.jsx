@@ -20,7 +20,7 @@ import OrderSuccessPage from './pages/OrderSuccessPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import Orders from './pages/Orders';          // ✅ Import Orders page
 import Wishlist from './pages/Wishlist.jsx';
-import BulkEnquiry from './pages/BulkEnquiry.jsx';
+import BulkEnquiry from './pages/BulkEnquiry.jsx';  //
 
 
 // Import common components

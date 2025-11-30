@@ -8,7 +8,7 @@ import "swiper/css/effect-fade";
 
 import img1 from "../../assets/image1.png";
 import img2 from "../../assets/image2.png";
-import video2 from "../../assets/video2.mp4";
+/* {import video2 from "../../assets/video2.mp4";} */
 
 const HeroBanner = () => {
   const swiperRef = useRef(null);
@@ -43,7 +43,7 @@ const HeroBanner = () => {
         className="w-full h-full"
       >
         {/* Video slide */}
-        <SwiperSlide>
+        {/* <SwiperSlide>
           <video
             ref={videoRef}
             src={video2}
@@ -62,7 +62,7 @@ const HeroBanner = () => {
               }
             }}
           />
-        </SwiperSlide>
+        </SwiperSlide> */}
 <style>
 {`
   .swiper-button-next,

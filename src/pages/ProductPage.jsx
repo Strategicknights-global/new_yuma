@@ -1,55 +1,219 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "../../firebase";
-import { useAuth } from "../context/AuthContext"; // ✅ use AuthContext
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import { Search, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Heart,
+  Truck,
+  Tag,
+} from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 8;
 
+// --- HELPERS ---
+const getProductPrice = (product) => {
+  if (product.variants && product.variants.length > 0) {
+    const firstVariant = product.variants[0];
+    return firstVariant.discountPrice ?? firstVariant.price ?? 0;
+  }
+  return product.price ?? 0;
+};
+
+const getDiscountPercentage = (product) => {
+  if (product.variants && product.variants.length > 0) {
+    return product.variants[0].discountPercentage || 0;
+  }
+  return 0;
+};
+
+// --- SUB-COMPONENT: PRODUCT CARD ---
+const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onBuyNow }) => {
+  const navigate = useNavigate(); // ✅ Hook for navigation
+  const buttonRef = useRef(null); 
+  
+  const price = getProductPrice(product);
+  const discountPercentage = getDiscountPercentage(product);
+  const isInStock = product.inStock;
+
+  // Get original price logic
+  let originalPrice = null;
+  if (product.variants && product.variants.length > 0) {
+    originalPrice = product.variants[0].price;
+  } else {
+    originalPrice = product.originalPrice;
+  }
+
+  // ✅ Handle Card Click to Navigate
+  const handleCardClick = () => {
+    navigate(`/products/${product.id}`);
+  };
+
+  return (
+    <div 
+      onClick={handleCardClick} // ✅ Make the whole div clickable
+      className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative w-full flex flex-col group cursor-pointer"
+    >
+      {/* Wishlist Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // ✅ Prevents navigating when clicking wishlist
+          onToggleWishlist(product);
+        }}
+        className="absolute top-3 right-3 z-20 bg-white rounded-full p-2 shadow hover:bg-gray-100 transition"
+      >
+        <Heart
+          className={`w-5 h-5 ${
+            isWishlisted ? "text-red-500 fill-red-500" : "text-gray-500"
+          }`}
+        />
+      </button>
+
+      {/* Badge Container */}
+      <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+        {!isInStock ? (
+          <div className="bg-red-500 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+            Out of Stock
+          </div>
+        ) : (
+          <>
+            <div className="bg-teal-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
+              <Truck size={12} className="text-teal-100" />
+              <span>Free Shipping</span>
+            </div>
+            {discountPercentage > 0 && (
+              <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1 w-fit">
+                <Tag size={12} className="text-orange-100" />
+                <span>{Math.round(discountPercentage)}% OFF</span>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Image - Removed Link wrapper since div is clickable */}
+      <div className="block overflow-hidden rounded-t-xl">
+        <img
+          src={product.images?.[0]}
+          alt={product.name}
+          className="product-image w-full h-48 object-cover"
+        />
+      </div>
+
+      <div className="p-4 text-center flex-grow flex flex-col">
+        <h3 className="text-md font-semibold text-gray-800 line-clamp-1">
+          {product.name}
+        </h3>
+        <div className="flex items-center justify-center gap-2 mt-1 mb-4">
+          <div className="text-xl font-bold text-[#b85a00]">₹{price}</div>
+          {isInStock && discountPercentage > 0 && originalPrice && (
+            <div className="text-xs text-gray-400 line-through">
+              ₹{originalPrice}
+            </div>
+          )}
+        </div>
+
+        {/* Buttons Container */}
+        <div className="flex justify-center space-x-2 mt-auto">
+          <button
+            ref={buttonRef}
+            onClick={(e) => {
+                e.stopPropagation(); // ✅ Prevents navigating when clicking Add to Cart
+                onAddToCart(product, buttonRef);
+            }}
+            disabled={!isInStock}
+            className={`cart-button ${!isInStock ? "disabled-out-of-stock" : ""}`}
+          >
+            {isInStock ? (
+              <>
+                <span className="add-to-cart">Add</span>
+                <span className="added">Added</span>
+                <i className="fas fa-shopping-cart"></i>
+                <i className="fas fa-box"></i>
+              </>
+            ) : (
+              <span className="out-of-stock">Out of Stock</span>
+            )}
+          </button>
+
+          <button
+            onClick={(e) => {
+                e.stopPropagation(); // ✅ Prevents navigating when clicking Buy Now
+                onBuyNow(product);
+            }}
+            disabled={!isInStock}
+            className={`text-white px-4 py-2 rounded-lg transition text-sm font-semibold
+              ${
+                isInStock
+                  ? "bg-[#57ba40] hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40] hover:text-[#57ba40]"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+          >
+            Buy Now
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN COMPONENT ---
 const ProductPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoggedIn } = useAuth(); // ✅ from AuthContext
+  const { user, isLoggedIn } = useAuth();
+  const { addToCart } = useCart();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [notification, setNotification] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategories, setActiveCategories] = useState([]);
-  const [priceRange, setPriceRange] = useState(1000);
+  const [priceRange, setPriceRange] = useState(5000);
   const [sortOption, setSortOption] = useState("top-sales");
   const [currentPage, setCurrentPage] = useState(1);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Handle query params (search, category, sort, price, page)
+  // 1. Fetch Wishlist Real-time
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const categoryName = params.get("category");
-    const category = categories.find((c) => c.name === categoryName);
+    if (!user) {
+      setWishlist([]);
+      return;
+    }
+    const userRef = doc(db, "users", user.uid);
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setWishlist(docSnap.data().wishlist || []);
+      } else {
+        setWishlist([]);
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
 
-    setSearchTerm(params.get("search") || "");
-    setActiveCategories(
-      category
-        ? [category.id]
-        : params.get("categories")?.split(",").filter(Boolean) || []
-    );
-    setSortOption(params.get("sort") || "top-sales");
-    setPriceRange(Number(params.get("price")) || 1000);
-    setCurrentPage(Number(params.get("page")) || 1);
-  }, [location.search, categories]);
-
-  // Fetch products & categories
+  // 2. Fetch Products & Categories
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
         const productsSnapshot = await getDocs(collection(db, "products"));
         setProducts(
           productsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -71,7 +235,24 @@ const ProductPage = () => {
     fetchData();
   }, []);
 
-  // Sync filters with query params
+  // 3. Handle URL Params
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const categoryName = params.get("category");
+    const category = categories.find((c) => c.name === categoryName);
+
+    setSearchTerm(params.get("search") || "");
+    setActiveCategories(
+      category
+        ? [category.id]
+        : params.get("categories")?.split(",").filter(Boolean) || []
+    );
+    setSortOption(params.get("sort") || "top-sales");
+    setPriceRange(Number(params.get("price")) || 5000);
+    setCurrentPage(Number(params.get("page")) || 1);
+  }, [location.search, categories]);
+
+  // 4. Sync Filters to URL
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("search", searchTerm);
@@ -84,7 +265,7 @@ const ProductPage = () => {
       }
     }
     if (sortOption !== "top-sales") params.set("sort", sortOption);
-    if (priceRange < 1000) params.set("price", priceRange);
+    if (priceRange < 5000) params.set("price", priceRange);
     if (currentPage > 1) params.set("page", currentPage);
 
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
@@ -99,15 +280,16 @@ const ProductPage = () => {
     categories,
   ]);
 
-  // Filter + Sort
+  // 5. Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     let filtered = products
       .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
       .filter(
         (p) =>
-          activeCategories.length === 0 || activeCategories.includes(p.categoryId)
+          activeCategories.length === 0 ||
+          activeCategories.includes(p.categoryId)
       )
-      .filter((p) => (p.price || p.variants?.[0]?.price) <= priceRange);
+      .filter((p) => getProductPrice(p) <= priceRange);
 
     const sorted = [...filtered];
     switch (sortOption) {
@@ -115,18 +297,10 @@ const ProductPage = () => {
         sorted.sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0));
         break;
       case "price-asc":
-        sorted.sort(
-          (a, b) =>
-            (a.price || a.variants?.[0]?.price) -
-            (b.price || b.variants?.[0]?.price)
-        );
+        sorted.sort((a, b) => getProductPrice(a) - getProductPrice(b));
         break;
       case "price-desc":
-        sorted.sort(
-          (a, b) =>
-            (b.price || b.variants?.[0]?.price) -
-            (a.price || a.variants?.[0]?.price)
-        );
+        sorted.sort((a, b) => getProductPrice(b) - getProductPrice(a));
         break;
       case "name-asc":
         sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -143,6 +317,85 @@ const ProductPage = () => {
     currentPage * PRODUCTS_PER_PAGE
   );
 
+  // --- ACTIONS ---
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => setNotification(""), 3000);
+  };
+
+  const handleWishlistToggle = async (product) => {
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    try {
+      const userRef = doc(db, "users", user.uid);
+      if (wishlist.includes(product.id)) {
+        await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
+        showNotification(`${product.name} removed from wishlist`);
+      } else {
+        await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
+        showNotification(`${product.name} added to wishlist`);
+      }
+    } catch (err) {
+      console.error("Error updating wishlist:", err);
+      showNotification("Failed to update wishlist");
+    }
+  };
+
+  const handleAddToCart = (product, buttonRef) => {
+    if (!product.inStock) {
+      showNotification(`${product.name} is currently out of stock`);
+      return;
+    }
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const variant =
+      product.variants && product.variants.length > 0
+        ? product.variants[0]
+        : null;
+
+    addToCart(product, 1, variant);
+
+    const displayName = variant
+      ? `${product.name} (${variant.size})`
+      : product.name;
+    showNotification(`${displayName} added to cart`);
+
+    if (buttonRef && buttonRef.current) {
+      buttonRef.current.classList.add("clicked");
+      setTimeout(() => {
+        buttonRef.current.classList.remove("clicked");
+      }, 1500);
+    }
+  };
+
+  const handleBuyNow = (product) => {
+    if (!product.inStock) {
+      showNotification(`${product.name} is currently out of stock`);
+      return;
+    }
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const variant =
+      product.variants && product.variants.length > 0
+        ? product.variants[0]
+        : null;
+
+    addToCart(product, 1, variant);
+    const displayName = variant
+      ? `${product.name} (${variant.size})`
+      : product.name;
+    showNotification(`${displayName} added to cart`);
+    setTimeout(() => navigate("/cart"), 800);
+  };
+
   const handleCategoryToggle = (catId) => {
     setActiveCategories((prev) =>
       prev.includes(catId)
@@ -155,23 +408,9 @@ const ProductPage = () => {
   const handleClearFilters = () => {
     setActiveCategories([]);
     setSortOption("top-sales");
-    setPriceRange(1000);
+    setPriceRange(5000);
     setSearchTerm("");
     setCurrentPage(1);
-  };
-
-  const showNotification = (message) => {
-    setNotification(message);
-    setTimeout(() => setNotification(""), 3000);
-  };
-
-  // Handle View Details → redirect if not logged in
-  const handleViewDetails = (id) => {
-    if (isLoggedIn) {
-      navigate(`/products/${id}`);
-    } else {
-      setShowLoginModal(true);
-    }
   };
 
   const FilterPanel = () => (
@@ -208,6 +447,20 @@ const ProductPage = () => {
           <option value="name-asc">Name: A to Z</option>
         </select>
       </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-lg text-[#000000]">
+          Price Range: 0 - ₹{priceRange}
+        </h3>
+        <input
+          type="range"
+          min="100"
+          max="10000"
+          step="100"
+          value={priceRange}
+          onChange={(e) => setPriceRange(Number(e.target.value))}
+          className="w-full accent-[#57ba40]"
+        />
+      </div>
       <button
         onClick={handleClearFilters}
         className="w-full py-2 bg-[#57ba40] text-[#ffffff] rounded-lg hover:bg-[#222222] transition-colors"
@@ -238,8 +491,136 @@ const ProductPage = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#ffffff] flex flex-col">
+    <div className="min-h-screen bg-[#ffffff] flex flex-col relative">
       <Navbar />
+
+      {/* STYLES */}
+      <style>{`
+        .cart-button {
+          position: relative;
+          padding: 10px;
+          flex: 1;
+          height: 44px;
+          border: 2px solid #57ba40;
+          border-radius: 10px;
+          background-color: #ffffff;
+          outline: none;
+          cursor: pointer;
+          color: #57ba40;
+          transition: .3s ease-in-out;
+          overflow: hidden;
+          font-size: 14px;
+        }
+        .cart-button:hover:not(.disabled-out-of-stock) {
+          background-color: #f0fdf4;
+        }
+        .cart-button:active {
+          transform: scale(.9);
+        }
+        .cart-button .fa-shopping-cart {
+          position: absolute;
+          z-index: 2;
+          top: 50%;
+          left: -10%;
+          font-size: 1.2em;
+          transform: translate(-50%,-50%);
+          color: #57ba40;
+        }
+        .cart-button .fa-box {
+          position: absolute;
+          z-index: 3;
+          top: -20%;
+          left: 52%;
+          font-size: 0.9em;
+          transform: translate(-50%,-50%);
+          color: #57ba40;
+        }
+        .cart-button span {
+          position: absolute;
+          z-index: 3;
+          left: 50%;
+          top: 50%;
+          font-size: 0.9em;
+          color: #57ba40;
+          transform: translate(-50%,-50%);
+          white-space: nowrap;
+        }
+        .cart-button span.add-to-cart { opacity: 1; }
+        .cart-button span.added { opacity: 0; }
+
+        .cart-button.clicked .fa-shopping-cart {
+          animation: cart 1.5s ease-in-out forwards;
+        }
+        .cart-button.clicked .fa-box {
+          animation: box 1.5s ease-in-out forwards;
+        }
+        .cart-button.clicked span.add-to-cart {
+          animation: txt1 1.5s ease-in-out forwards;
+        }
+        .cart-button.clicked span.added {
+          animation: txt2 1.5s ease-in-out forwards;
+        }
+
+        @keyframes cart {
+          0% { left: -10%; }
+          40%, 60% { left: 50%; }
+          100% { left: 110%; }
+        }
+        @keyframes box {
+          0%, 40% { top: -20%; }
+          60% { top: 40%; left: 52%; }
+          100% { top: 40%; left: 112%; }
+        }
+        @keyframes txt1 {
+          0% { opacity: 1; }
+          20%, 100% { opacity: 0; }
+        }
+        @keyframes txt2 {
+          0%, 80% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+
+        /* Image hover effect */
+        .product-image {
+          transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .product-image:hover {
+          transform: scale(1.05);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        /* Disabled Out of Stock Button */
+        .cart-button.disabled-out-of-stock {
+          border: 2px solid #ff0000 !important;
+          background-color: #ffe5e5 !important;
+          cursor: not-allowed !important;
+          pointer-events: none !important;
+        }
+
+        .cart-button.disabled-out-of-stock span,
+        .cart-button.disabled-out-of-stock i {
+          color: #ff0000 !important;
+          opacity: 1 !important;
+        }
+
+        /* Hide animations when disabled */
+        .cart-button.disabled-out-of-stock.clicked .fa-shopping-cart,
+        .cart-button.disabled-out-of-stock.clicked .fa-box,
+        .cart-button.disabled-out-of-stock.clicked span.add-to-cart,
+        .cart-button.disabled-out-of-stock.clicked span.added {
+          animation: none !important;
+        }
+        .cart-button span.out-of-stock {
+          white-space: nowrap !important;
+          font-size: 0.85em;
+        }
+      `}</style>
+
+      {/* Font Awesome for the icons used in the cart animation */}
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      />
 
       {notification && (
         <div className="fixed top-20 right-4 z-[100] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
@@ -249,9 +630,7 @@ const ProductPage = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 flex items-center justify-center 
-    bg-black/50 backdrop-blur-sm z-[200]">
-
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[200]">
           <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm w-full">
             <h2 className="text-xl font-semibold text-[#000000] mb-4">
               You are not logged in
@@ -333,81 +712,17 @@ const ProductPage = () => {
               {paginatedProducts.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-                    {paginatedProducts.map((p) => {
-                      const displayPrice =
-                        p.variants?.[0]?.discountPrice ??
-                        p.variants?.[0]?.price ??
-                        p.price;
-                      const originalPrice =
-                        p.variants?.[0]?.price ?? p.originalPrice;
-                      const isComplex = p.comboItems || p.variants;
-
-                      return (
-                        <div
-                          key={p.id}
-                          className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow flex flex-col group"
-                        >
-                          <div className="p-4 flex flex-col flex-grow">
-                            <div className="block relative mb-4">
-                              <img
-                                src={p.images?.[0]}
-                                alt={p.name}
-                                className="w-full h-48 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
-                              />
-                              {p.isNew && (
-                                <span className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                                  NEW
-                                </span>
-                              )}
-                            </div>
-
-                            <h3 className="font-semibold text-[#000000] mb-2 flex-grow">
-                              {p.name}
-                            </h3>
-
-                            <div className="flex items-baseline gap-2 mb-4">
-                              {originalPrice && displayPrice < originalPrice && (
-                                <span className="text-base text-orange-500 line-through">
-                                  ₹{originalPrice}
-                                </span>
-                              )}
-                              <span className="text-xl font-bold text-orange-900">
-                                ₹{displayPrice}
-                              </span>
-                            </div>
-
-                            <div className="flex space-x-2 mt-auto">
-                              {isComplex ? (
-                                <button
-                                  onClick={() => handleViewDetails(p.id)}
-                                  className="w-full text-center bg-[#57ba40] text-white py-2 px-4 rounded font-semibold hover:bg-[#222222] text-sm"
-                                >
-                                  View Details
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() =>
-                                    p.inStock
-                                      ? showNotification(
-                                          "Please login to add to cart or implement a guest cart."
-                                        )
-                                      : null
-                                  }
-                                  disabled={!p.inStock}
-                                  className={`flex-1 py-2 px-4 rounded font-semibold text-sm transition-colors ${
-                                    p.inStock
-                                      ? "bg-[#57ba40] text-[#ffffff] hover:bg-[#222222]"
-                                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                  }`}
-                                >
-                                  {p.inStock ? "Add to Cart" : "Out of Stock"}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {/* ✅ Uses ProductCard component */}
+                    {paginatedProducts.map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        product={p}
+                        isWishlisted={wishlist.includes(p.id)}
+                        onToggleWishlist={handleWishlistToggle}
+                        onAddToCart={handleAddToCart}
+                        onBuyNow={handleBuyNow}
+                      />
+                    ))}
                   </div>
 
                   {/* Pagination */}
@@ -417,7 +732,7 @@ const ProductPage = () => {
                       className="flex items-center px-4 py-2 text-orange-700 rounded-lg disabled:opacity-50"
                       disabled={currentPage === 1}
                     >
-                      <ChevronLeft className="w-4 h-4 mr-1" /> 
+                      <ChevronLeft className="w-4 h-4 mr-1" />
                     </button>
                     <span className="text-[#57ba40] font-medium">
                       Page {currentPage} of {totalPages || 1}
@@ -435,7 +750,7 @@ const ProductPage = () => {
                 </>
               ) : (
                 <div className="text-center py-16 bg-[#ffffff] rounded-lg shadow-sm border border-[#57ba40]">
-                    <h2 className="text-2xl font-semibold text-[#000000]">
+                  <h2 className="text-2xl font-semibold text-[#000000]">
                     No Products Found
                   </h2>
                   <p className="text-[#000000] mt-2">
@@ -453,7 +768,6 @@ const ProductPage = () => {
           </div>
         </div>
       </main>
-
     </div>
   );
 };

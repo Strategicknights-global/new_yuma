@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   doc,
+  collection, // Added collection to fetch goals
   updateDoc,
   arrayUnion,
   arrayRemove,
@@ -10,8 +11,9 @@ import {
 import { db } from "../../../firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import { Heart } from "lucide-react";
+import { Heart, Truck, Tag, CheckCircle } from "lucide-react"; // Added CheckCircle
 
+// Helper to get final price
 const getProductPrice = (product) => {
   if (product.variants && product.variants.length > 0) {
     const firstVariant = product.variants[0];
@@ -20,14 +22,27 @@ const getProductPrice = (product) => {
   return product.price ?? 0;
 };
 
+// Helper to get discount percentage
+const getDiscountPercentage = (product) => {
+  if (product.variants && product.variants.length > 0) {
+    return product.variants[0].discountPercentage || 0;
+  }
+  return 0;
+};
+
 const PopularProducts = ({ products, categories }) => {
+  // --- STATE ---
   const [activeCategory, setActiveCategory] = useState("All");
+  const [activeGoal, setActiveGoal] = useState(null); // Filter for Goal
+  const [goals, setGoals] = useState([]); // Store fetched goals
   const [wishlist, setWishlist] = useState([]);
   const [notification, setNotification] = useState("");
+  
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user, isLoggedIn } = useAuth();
 
+  // 1. Fetch User Wishlist
   useEffect(() => {
     if (!user) {
       setWishlist([]);
@@ -43,6 +58,19 @@ const PopularProducts = ({ products, categories }) => {
     });
     return () => unsubscribe();
   }, [user]);
+
+  // 2. Fetch Shop Goals (New)
+  useEffect(() => {
+    const goalsRef = collection(db, "shopGoals");
+    const unsubscribe = onSnapshot(goalsRef, (snapshot) => {
+      const goalsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setGoals(goalsData);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const showNotification = (message) => {
     setNotification(message);
@@ -70,12 +98,10 @@ const PopularProducts = ({ products, categories }) => {
   };
 
   const handleAddToCart = (product, buttonRef) => {
-    // ✅ Out of Stock Check
     if (!product.inStock) {
       showNotification(`${product.name} is currently out of stock`);
       return;
     }
-
     if (!isLoggedIn) {
       navigate("/login");
       return;
@@ -102,12 +128,10 @@ const PopularProducts = ({ products, categories }) => {
   };
 
   const handleBuyNow = (product) => {
-    // ✅ Out of Stock Check
     if (!product.inStock) {
       showNotification(`${product.name} is currently out of stock`);
       return;
     }
-
     if (!isLoggedIn) {
       navigate("/login");
       return;
@@ -119,18 +143,38 @@ const PopularProducts = ({ products, categories }) => {
         : null;
 
     addToCart(product, 1, variant);
-
-    const displayName = variant
-      ? `${product.name} (${variant.size})`
-      : product.name;
-    showNotification(`${displayName} added to cart`);
-
+    showNotification(`${product.name} added to cart`);
     setTimeout(() => navigate("/cart"), 800);
   };
 
-  const filteredProducts = products.filter((p) =>
-    activeCategory === "All" ? true : p.categoryId === activeCategory
-  );
+  // --- FILTER HANDLERS ---
+  const handleCategoryClick = (catId) => {
+    setActiveCategory(catId);
+    setActiveGoal(null); // Reset goal if category is picked
+  };
+
+  const handleGoalClick = (goalId) => {
+    // Toggle: if clicking the same goal, turn it off
+    if (activeGoal === goalId) {
+        setActiveGoal(null);
+    } else {
+        setActiveGoal(goalId);
+        setActiveCategory("All"); // Reset category if goal is picked
+    }
+  };
+
+  // --- FILTER LOGIC ---
+  const filteredProducts = products.filter((p) => {
+    // 1. Filter by Goal
+    if (activeGoal) {
+        return p.goalId === activeGoal;
+    }
+    // 2. Filter by Category
+    if (activeCategory === "All") {
+      return true;
+    }
+    return p.categoryId === activeCategory;
+  });
 
   return (
     <section className="py-12 bg-white relative">
@@ -140,8 +184,9 @@ const PopularProducts = ({ products, categories }) => {
         </div>
       )}
 
-      {/* ✅ Animation Styles */}
+      {/* ✅ CSS Styles */}
       <style>{`
+        /* ... existing cart button styles ... */
         .cart-button {
           position: relative;
           padding: 10px;
@@ -157,7 +202,7 @@ const PopularProducts = ({ products, categories }) => {
           overflow: hidden;
           font-size: 14px;
         }
-        .cart-button:hover {
+        .cart-button:hover:not(.disabled-out-of-stock) {
           background-color: #f0fdf4;
         }
         .cart-button:active {
@@ -192,112 +237,128 @@ const PopularProducts = ({ products, categories }) => {
         }
         .cart-button span.add-to-cart { opacity: 1; }
         .cart-button span.added { opacity: 0; }
+        .cart-button.clicked .fa-shopping-cart { animation: cart 1.5s ease-in-out forwards; }
+        .cart-button.clicked .fa-box { animation: box 1.5s ease-in-out forwards; }
+        .cart-button.clicked span.add-to-cart { animation: txt1 1.5s ease-in-out forwards; }
+        .cart-button.clicked span.added { animation: txt2 1.5s ease-in-out forwards; }
 
-        .cart-button.clicked .fa-shopping-cart {
-          animation: cart 1.5s ease-in-out forwards;
-        }
-        .cart-button.clicked .fa-box {
-          animation: box 1.5s ease-in-out forwards;
-        }
-        .cart-button.clicked span.add-to-cart {
-          animation: txt1 1.5s ease-in-out forwards;
-        }
-        .cart-button.clicked span.added {
-          animation: txt2 1.5s ease-in-out forwards;
-        }
+        @keyframes cart { 0% { left: -10%; } 40%, 60% { left: 50%; } 100% { left: 110%; } }
+        @keyframes box { 0%, 40% { top: -20%; } 60% { top: 40%; left: 52%; } 100% { top: 40%; left: 112%; } }
+        @keyframes txt1 { 0% { opacity: 1; } 20%, 100% { opacity: 0; } }
+        @keyframes txt2 { 0%, 80% { opacity: 0; } 100% { opacity: 1; } }
 
-        @keyframes cart {
-          0% { left: -10%; }
-          40%, 60% { left: 50%; }
-          100% { left: 110%; }
+        .product-image { transition: transform 0.4s ease, box-shadow 0.4s ease; }
+        .product-image:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        
+        .cart-button.disabled-out-of-stock {
+          border: 2px solid #ff0000 !important;
+          background-color: #ffe5e5 !important;
+          cursor: not-allowed !important;
+          pointer-events: none !important;
         }
-        @keyframes box {
-          0%, 40% { top: -20%; }
-          60% { top: 40%; left: 52%; }
-          100% { top: 40%; left: 112%; }
+        .cart-button.disabled-out-of-stock span, .cart-button.disabled-out-of-stock i { color: #ff0000 !important; opacity: 1 !important; }
+        .cart-button.disabled-out-of-stock.clicked .fa-shopping-cart,
+        .cart-button.disabled-out-of-stock.clicked .fa-box,
+        .cart-button.disabled-out-of-stock.clicked span.add-to-cart,
+        .cart-button.disabled-out-of-stock.clicked span.added { animation: none !important; }
+        
+        /* --- GOAL CARD STYLES --- */
+        .goal-card-overlay {
+            background: rgba(0,0,0,0.3);
+            transition: background 0.3s ease;
         }
-        @keyframes txt1 {
-          0% { opacity: 1; }
-          20%, 100% { opacity: 0; }
+        .goal-card:hover .goal-card-overlay {
+            background: rgba(0,0,0,0.5);
         }
-        @keyframes txt2 {
-          0%, 80% { opacity: 0; }
-          100% { opacity: 1; }
+        .goal-card:hover img {
+            transform: scale(1.1);
         }
-
-        /* ✅ Image hover effect */
-        .product-image {
-          transition: transform 0.4s ease, box-shadow 0.4s ease;
-        }
-        .product-image:hover {
-          transform: scale(1.05);
-          box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-        }
-          /* 🔴 Disabled Out of Stock Button */
-.cart-button.disabled-out-of-stock {
-  border: 2px solid #ff0000 !important;
-  background-color: #ffe5e5 !important;
-  cursor: not-allowed !important;
-  pointer-events: none !important;
-}
-
-.cart-button.disabled-out-of-stock span,
-.cart-button.disabled-out-of-stock i {
-  color: #ff0000 !important;
-  opacity: 1 !important;
-}
-
-/* Hide animations when disabled */
-.cart-button.disabled-out-of-stock.clicked .fa-shopping-cart,
-.cart-button.disabled-out-of-stock.clicked .fa-box,
-.cart-button.disabled-out-of-stock.clicked span.add-to-cart,
-.cart-button.disabled-out-of-stock.clicked span.added {
-  animation: none !important;
-}
-.cart-button span.out-of-stock {
-  white-space: nowrap !important;
-  font-size: 0.85em;
-}
-
       `}</style>
 
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <div className="flex flex-col items-center gap-4">
-            <h2 className="font-['Poppins'] font-sans font-medium text-[#07602e] text-5xl md:text-6xl  relative">
-              Popular Products
+            <h2 className="font-['Poppins'] font-sans font-medium text-[#07602e] text-5xl md:text-6xl relative">
+              {activeGoal 
+                ? `Shop for ${goals.find(g => g.id === activeGoal)?.name}` 
+                : "Popular Products"}
             </h2>
           </div>
         </div>
-        <style>{` 
-  @keyframes gradient {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-  .animate-gradient {
-    animation: gradient 3s ease infinite;
-  }
-`}</style>
 
-        <div className="flex justify-center mb-8 space-x-4 flex-wrap">
+        {/* --- NEW SECTION: SHOP BY GOALS --- */}
+        {goals.length > 0 && (
+          <div className="mb-12">
+            <h3 className="text-2xl font-semibold text-gray-700 mb-6 text-center">Shop by Goal</h3>
+            
+            <div className="flex flex-wrap justify-center gap-6">
+              {goals.map((goal) => (
+                <div
+                  key={goal.id}
+                  onClick={() => handleGoalClick(goal.id)}
+                  className={`
+                    relative w-36 h-24 md:w-48 md:h-32 rounded-xl overflow-hidden cursor-pointer shadow-lg goal-card group transition-all duration-300
+                    ${activeGoal === goal.id ? "ring-4 ring-[#57ba40] scale-105" : ""}
+                  `}
+                >
+                  {/* Goal Image */}
+                  <img
+                    src={goal.image || "https://placehold.co/300x200?text=Goal"}
+                    alt={goal.name}
+                    className="w-full h-full object-cover transition-transform duration-500"
+                  />
+                  
+                  {/* Overlay with Text */}
+                  <div className="goal-card-overlay absolute inset-0 flex items-center justify-center">
+                    <span className="text-white font-bold text-base md:text-lg text-center px-2 drop-shadow-md tracking-wide">
+                      {goal.name}
+                    </span>
+                    
+                    {/* Active Checkmark */}
+                    {activeGoal === goal.id && (
+                        <div className="absolute top-2 right-2">
+                             <CheckCircle className="text-[#57ba40] bg-white rounded-full p-0.5" size={20} fill="white" />
+                        </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Clear Goal Filter Button */}
+            {activeGoal && (
+                <div className="text-center mt-4">
+                    <button 
+                        onClick={() => setActiveGoal(null)}
+                        className="text-sm text-gray-500 hover:text-[#57ba40] underline font-medium"
+                    >
+                        Show All Products
+                    </button>
+                </div>
+            )}
+          </div>
+        )}
+
+        {/* --- EXISTING CATEGORY FILTERS --- */}
+        <div className="flex justify-center mb-8 space-x-4 flex-wrap gap-y-2">
           <button
-            onClick={() => setActiveCategory("All")}
-            className={`px-4 py-2 rounded-lg ${
-              activeCategory === "All"
+            onClick={() => handleCategoryClick("All")}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              activeCategory === "All" && !activeGoal
                 ? "bg-[#00a63e] text-white"
-                : "bg-white border border-[#57ba40]"
+                : "bg-white border border-[#57ba40] text-gray-700 hover:bg-green-50"
             }`}
           >
-            All
+            All Categories
           </button>
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg ${
+              onClick={() => handleCategoryClick(cat.id)}
+              className={`px-4 py-2 rounded-lg transition-colors ${
                 activeCategory === cat.id
                   ? "bg-[#00a63e] text-white"
-                  : "bg-white border border-[#57ba40]"
+                  : "bg-white border border-[#57ba40] text-gray-700 hover:bg-green-50"
               }`}
             >
               {cat.name}
@@ -305,23 +366,31 @@ const PopularProducts = ({ products, categories }) => {
           ))}
         </div>
 
+        {/* --- PRODUCTS GRID --- */}
+        {filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+                <p className="text-xl text-gray-500">No products found matching your selection.</p>
+                <button onClick={() => { setActiveGoal(null); setActiveCategory("All"); }} className="mt-4 text-[#57ba40] font-bold hover:underline">
+                    Clear all filters
+                </button>
+            </div>
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-
           {filteredProducts.slice(0, 8).map((p) => {
             const price = getProductPrice(p);
+            const discountPercentage = getDiscountPercentage(p);
             const isWishlisted = wishlist.includes(p.id);
             const buttonRef = useRef(null);
-            const isInStock = p.inStock; // ✅ Get inStock status
+            const isInStock = p.inStock;
 
             return (
-             <div
-  key={p.id}
-  className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative w-full max-w-[300px] mx-auto"
->
-
+              <div
+                key={p.id}
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative w-full max-w-[300px] mx-auto group"
+              >
                 <button
                   onClick={() => handleWishlistToggle(p)}
-                  className="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:bg-gray-100 transition"
+                  className="absolute top-3 right-3 z-20 bg-white rounded-full p-2 shadow hover:bg-gray-100 transition"
                 >
                   <Heart
                     className={`w-5 h-5 ${
@@ -332,37 +401,59 @@ const PopularProducts = ({ products, categories }) => {
                   />
                 </button>
 
-                <Link to={`/products/${p.id}`}>
-                  <img
-                    src={p.images?.[0]}
-                    alt={p.name}
-                    className="product-image w-full h-48 object-cover rounded-t-xl"
-                  />
-                  {/* ✅ Out of Stock Badge */}
-                  {!isInStock && (
-                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                {/* Badge Container */}
+                <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+                  {!isInStock ? (
+                    <div className="bg-red-500 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                       Out of Stock
                     </div>
+                  ) : (
+                    <>
+                      <div className="bg-teal-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
+                        <Truck size={12} className="text-teal-100" />
+                        <span>Free Shipping</span>
+                      </div>
+                      {discountPercentage > 0 && (
+                        <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1 w-fit">
+                          <Tag size={12} className="text-orange-100" />
+                          <span>{Math.round(discountPercentage)}% OFF</span>
+                        </div>
+                      )}
+                    </>
                   )}
+                </div>
+
+                <Link to={`/products/${p.id}`}>
+                  <div className="overflow-hidden rounded-t-xl">
+                    <img
+                      src={p.images?.[0]}
+                      alt={p.name}
+                      className="product-image w-full h-48 object-cover"
+                    />
+                  </div>
 
                   <div className="p-4 text-center">
-                    <h3 className="text-md font-semibold text-gray-800">
+                    <h3 className="text-md font-semibold text-gray-800 line-clamp-1">
                       {p.name}
                     </h3>
-                    <div className="text-xl font-bold text-[#b85a00]">
-                      ₹{price}
+                    <div className="flex items-center justify-center gap-2 mt-1">
+                        <div className="text-xl font-bold text-[#b85a00]">₹{price}</div>
+                        {isInStock && discountPercentage > 0 && p.variants?.[0]?.price && (
+                             <div className="text-xs text-gray-400 line-through">
+                                ₹{p.variants[0].price}
+                             </div>
+                        )}
                     </div>
                   </div>
                 </Link>
 
-                <div className="flex justify-center space-x-2 p-4">
+                <div className="flex justify-center space-x-2 p-4 pt-0">
                   <button
-  ref={buttonRef}
-  onClick={() => handleAddToCart(p, buttonRef)}
-  disabled={!isInStock}
-  className={`cart-button ${!isInStock ? "disabled-out-of-stock" : ""}`}
->
-
+                    ref={buttonRef}
+                    onClick={() => handleAddToCart(p, buttonRef)}
+                    disabled={!isInStock}
+                    className={`cart-button ${!isInStock ? "disabled-out-of-stock" : ""}`}
+                  >
                     {isInStock ? (
                       <>
                         <span className="add-to-cart">Add to cart</span>
@@ -379,11 +470,11 @@ const PopularProducts = ({ products, categories }) => {
                     onClick={() => handleBuyNow(p)}
                     disabled={!isInStock}
                     className={`text-white px-4 py-2 rounded-lg transition 
-    ${
-      isInStock
-        ? "bg-[#57ba40] hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40] hover:text-[#57ba40]"
-        : "bg-gray-400 cursor-not-allowed"
-    }`}
+                      ${
+                        isInStock
+                          ? "bg-[#57ba40] hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40] hover:text-[#57ba40]"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }`}
                   >
                     Buy Now
                   </button>
@@ -392,6 +483,7 @@ const PopularProducts = ({ products, categories }) => {
             );
           })}
         </div>
+        )}
       </div>
     </section>
   );

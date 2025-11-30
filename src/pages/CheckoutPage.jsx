@@ -10,6 +10,7 @@ import { db } from "../../firebase";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { ChevronRight } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 const PRODUCT_COLLECTION_NAME = "products";
 
@@ -202,7 +203,9 @@ const CheckoutPage = () => {
   }
 
   return (
+    
     <div className="min-h-screen bg-gray-100">
+    <Navbar />
       <style>{`
         @keyframes slideInUp {
           from {
@@ -219,7 +222,8 @@ const CheckoutPage = () => {
       {/* Toast Notification */}
       {toast.show && (
         <div
-          className={`fixed bottom-6 right-6 px-8 py-5 rounded-lg shadow-2xl text-white font-semibold flex items-center gap-3 z-[9999] ${
+          className={`fixed bottom-6 right-6 px-8 rounded-lg shadow-2xl text-white font-semibold flex items-center gap-3 z-[9999] ${
+
             toast.type === "success" ? "bg-green-500" : "bg-red-500"
           }`}
           style={{
@@ -228,7 +232,7 @@ const CheckoutPage = () => {
         >
           {toast.type === "success" && (
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 align-middle"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
