@@ -14,6 +14,7 @@ import Testimonials from "./components/Testimonials";
 import SocialMedia from "./components/SocialMedia";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Categories from "./components/Category";
 
 
 const HomePage = () => {
@@ -134,7 +135,7 @@ const HomePage = () => {
         handleBuyNow={handleBuyNow}
         getProductPrice={getProductPrice}
       />
-
+<Categories/>
       <MegaCombo
         products={comboProducts}
         addToCart={handleAddToCart}

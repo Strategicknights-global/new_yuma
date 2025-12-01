@@ -85,16 +85,14 @@ const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onB
 
       {/* Badge Container */}
       <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-        {!isInStock ? (
-          <div className="bg-red-500 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            Out of Stock
-          </div>
-        ) : (
+       
           <>
-            <div className="bg-teal-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
+            {product.inStock && (
+            <div className="bg-[#57ba40] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
               <Truck size={12} className="text-teal-100" />
               <span>Free Shipping</span>
             </div>
+            )}
             {discountPercentage > 0 && (
               <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1 w-fit">
                 <Tag size={12} className="text-orange-100" />
@@ -102,7 +100,7 @@ const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onB
               </div>
             )}
           </>
-        )}
+      
       </div>
 
       {/* Image - Removed Link wrapper since div is clickable */}
@@ -150,21 +148,16 @@ const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onB
             )}
           </button>
 
-          <button
-            onClick={(e) => {
-                e.stopPropagation(); // ✅ Prevents navigating when clicking Buy Now
-                onBuyNow(product);
-            }}
-            disabled={!isInStock}
-            className={`text-white px-4 py-2 rounded-lg transition text-sm font-semibold
-              ${
-                isInStock
-                  ? "bg-[#57ba40] hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40] hover:text-[#57ba40]"
-                  : "bg-gray-400 cursor-not-allowed"
-              }`}
-          >
-            Buy Now
-          </button>
+         {isInStock && (
+  <button
+    onClick={() => handleBuyNow(p)}
+    className="text-white px-4 py-2 rounded-lg bg-[#57ba40] 
+               hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40]
+               hover:text-[#57ba40] transition"
+  >
+    Buy Now
+  </button>
+)}
         </div>
       </div>
     </div>

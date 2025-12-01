@@ -286,59 +286,6 @@ const PopularProducts = ({ products, categories }) => {
           </div>
         </div>
 
-        {/* --- NEW SECTION: SHOP BY GOALS --- */}
-        {goals.length > 0 && (
-          <div className="mb-12">
-            <h3 className="text-2xl font-semibold text-gray-700 mb-6 text-center">Shop by Goal</h3>
-            
-            <div className="flex flex-wrap justify-center gap-6">
-              {goals.map((goal) => (
-                <div
-                  key={goal.id}
-                  onClick={() => handleGoalClick(goal.id)}
-                  className={`
-                    relative w-36 h-24 md:w-48 md:h-32 rounded-xl overflow-hidden cursor-pointer shadow-lg goal-card group transition-all duration-300
-                    ${activeGoal === goal.id ? "ring-4 ring-[#57ba40] scale-105" : ""}
-                  `}
-                >
-                  {/* Goal Image */}
-                  <img
-                    src={goal.image || "https://placehold.co/300x200?text=Goal"}
-                    alt={goal.name}
-                    className="w-full h-full object-cover transition-transform duration-500"
-                  />
-                  
-                  {/* Overlay with Text */}
-                  <div className="goal-card-overlay absolute inset-0 flex items-center justify-center">
-                    <span className="text-white font-bold text-base md:text-lg text-center px-2 drop-shadow-md tracking-wide">
-                      {goal.name}
-                    </span>
-                    
-                    {/* Active Checkmark */}
-                    {activeGoal === goal.id && (
-                        <div className="absolute top-2 right-2">
-                             <CheckCircle className="text-[#57ba40] bg-white rounded-full p-0.5" size={20} fill="white" />
-                        </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Clear Goal Filter Button */}
-            {activeGoal && (
-                <div className="text-center mt-4">
-                    <button 
-                        onClick={() => setActiveGoal(null)}
-                        className="text-sm text-gray-500 hover:text-[#57ba40] underline font-medium"
-                    >
-                        Show All Products
-                    </button>
-                </div>
-            )}
-          </div>
-        )}
-
         {/* --- EXISTING CATEGORY FILTERS --- */}
         <div className="flex justify-center mb-8 space-x-4 flex-wrap gap-y-2">
           <button
@@ -375,7 +322,7 @@ const PopularProducts = ({ products, categories }) => {
                 </button>
             </div>
         ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mx-22">
           {filteredProducts.slice(0, 8).map((p) => {
             const price = getProductPrice(p);
             const discountPercentage = getDiscountPercentage(p);
@@ -403,16 +350,16 @@ const PopularProducts = ({ products, categories }) => {
 
                 {/* Badge Container */}
                 <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-                  {!isInStock ? (
-                    <div className="bg-red-500 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      Out of Stock
-                    </div>
-                  ) : (
+                  
                     <>
-                      <div className="bg-teal-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
+                    {p.inStock && (
+    <div className="bg-[#57ba40] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
                         <Truck size={12} className="text-teal-100" />
                         <span>Free Shipping</span>
                       </div>
+)}
+
+                    
                       {discountPercentage > 0 && (
                         <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1 w-fit">
                           <Tag size={12} className="text-orange-100" />
@@ -420,7 +367,7 @@ const PopularProducts = ({ products, categories }) => {
                         </div>
                       )}
                     </>
-                  )}
+                 
                 </div>
 
                 <Link to={`/products/${p.id}`}>
@@ -466,18 +413,18 @@ const PopularProducts = ({ products, categories }) => {
                     )}
                   </button>
 
-                  <button
-                    onClick={() => handleBuyNow(p)}
-                    disabled={!isInStock}
-                    className={`text-white px-4 py-2 rounded-lg transition 
-                      ${
-                        isInStock
-                          ? "bg-[#57ba40] hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40] hover:text-[#57ba40]"
-                          : "bg-gray-400 cursor-not-allowed"
-                      }`}
-                  >
-                    Buy Now
-                  </button>
+                 {isInStock && (
+  <button
+    onClick={() => handleBuyNow(p)}
+    className="text-white px-4 py-2 rounded-lg bg-[#57ba40] 
+               hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40]
+               hover:text-[#57ba40] transition"
+  >
+    Buy Now
+  </button>
+)}
+
+
                 </div>
               </div>
             );

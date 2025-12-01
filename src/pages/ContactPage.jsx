@@ -181,11 +181,11 @@ const ContactPage = () => {
               <p className="text-[#000000]">
                 <strong>Address:</strong>{" "}
                 {siteConfig?.footerInfo?.address ||
-                  "123 Street Address, Old Nagar, Sample City – 123456"}
+                 " 29th Cross Rd, Kondappa Layout, C.V. Raman Nagar,Balaji Layout, Kaggadasapura,Bengaluru, Karnataka 560093"}
               </p>
               <p className="text-[#000000] mt-2">
                 <strong>Email:</strong>{" "}
-                {siteConfig?.footerInfo?.email || "info@yumas.com"}
+                {siteConfig?.footerInfo?.email || "yumasfreshfood@gmail.com"}
               </p>
               <p className="text-[#000000] mt-2">
                 <strong>Phone:</strong>{" "}
@@ -221,14 +221,14 @@ const ContactPage = () => {
                 >
                   <Youtube size={24} />
                 </a>
-                <a
+                {/* <a
                   href={siteConfig?.footerInfo?.socials?.twitter || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#57ba40] hover:text-blue-500"
                 >
-                  <Twitter size={24} />
-                </a>
+                  < size={24} />
+                </a> */}
               </div>
             </div>
           </div>

@@ -36,7 +36,7 @@ const WhyChooseUs = () => {
 
   // Animated counter for customers
   useEffect(() => {
-    const target = 15000;
+    const target = 3000;
     const duration = 2000;
     const increment = target / (duration / 16);
     let current = 0;
@@ -293,28 +293,36 @@ const WhyChooseUs = () => {
 
             {/* Customer Rating */}
             <div className="stat-card bg-gradient-to-br from-[#57ba40] to-[#4aa838] rounded-2xl p-8 text-center text-white shadow-lg relative overflow-hidden">
-              <div className="relative z-10">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="text-5xl font-bold">
-                    {rating.toFixed(1)}
-                  </div>
-                  <Star className="w-10 h-10 fill-white" />
-                </div>
-                <div className="text-sm font-medium text-white/90">
-                  Customer Rating
-                </div>
-                <div className="w-16 h-1 bg-white/30 mx-auto mt-3 rounded-full"></div>
-              </div>
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
-              <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full"></div>
-            </div>
+
+  {/* Highlight Tag */}
+  <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-white text-[#57ba40] text-xs font-semibold px-3 py-1 rounded-full shadow-md z-20">
+    As per Google Reviews
+  </div>
+
+  <div className="relative z-10 mt-6">
+    <div className="flex items-center justify-center gap-2 mb-2">
+      <div className="text-5xl font-bold">
+        {rating.toFixed(1)}
+      </div>
+      <Star className="w-10 h-10 fill-white" />
+    </div>
+    <div className="text-sm font-medium text-white/90">
+      Customer Rating
+    </div>
+    <div className="w-16 h-1 bg-white/30 mx-auto mt-3 rounded-full"></div>
+  </div>
+
+  <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
+  <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full"></div>
+</div>
+
           </div>
 
           {/* Trust Badge */}
           <div className="mt-12 text-center fade-in-up" style={{ animationDelay: '0.6s' }}>
             <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#57ba40] to-[#3d8a2d] text-white px-8 py-4 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
               <Leaf className="w-6 h-6" />
-              <span className="font-semibold">Trusted by 15,000+ Customers Nationwide</span>
+              <span className="font-semibold">Trusted by 3,000+ Customers Nationwide</span>
             </div>
           </div>
         </div>

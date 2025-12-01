@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase"; // Ensure this path matches your project structure
+import { db } from "../../firebase"; // adjust path if needed
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer"; // Assuming you want to keep this
+import Footer from "../components/Footer"; // uncomment if used
 import { Award, Users, Target } from "lucide-react";
-import ThreeDHoverGallery from "../components/ThreeDHoverGallery"; 
+import ThreeDHoverGallery from "../components/ThreeDHoverGallery";
 
-// Import your story images
+// story images (adjust paths if required)
 import simg1 from "../assets/simg1.jpg";
 import simg2 from "../assets/simg2.jpg";
 import simg3 from "../assets/simg3.jpg";
 import simg4 from "../assets/simg4.jpg";
 import simg5 from "../assets/simg5.jpg";
 
-const AboutPage = () => {
+export default function AboutPage() {
   const [config, setConfig] = useState(null);
   const [content, setContent] = useState({
     aboutUs: "",
@@ -23,39 +23,45 @@ const AboutPage = () => {
     quotes: "",
   });
   const [loading, setLoading] = useState(true);
+  const heroRef = useRef(null);
+  const [heroShift, setHeroShift] = useState(0);
+
+  // Parallax effect on hero
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      // small gentle parallax
+      setHeroShift(Math.min(30, Math.max(-30, y * 0.06)));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Fetch Main Configuration (Images, Team, Footer info)
+        // 1. siteConfiguration/mainConfig (images, team)
         const configRef = doc(db, "siteConfiguration", "mainConfig");
         const configSnap = await getDoc(configRef);
-        
         if (configSnap.exists()) {
           setConfig(configSnap.data());
         }
 
-        // 2. Fetch Text Content (About, Mission, Vision, Journey, Quotes)
-        // These keys match the collection/doc IDs used in your AdminContent
-        const [aboutSnap, missionSnap, visionSnap, journeySnap, quotesSnap] = await Promise.all([
-          getDoc(doc(db, "siteContent", "aboutUs")),
-          getDoc(doc(db, "siteContent", "mission")),
-          getDoc(doc(db, "siteContent", "vision")),
-          getDoc(doc(db, "siteContent", "journey")),
-          getDoc(doc(db, "siteContent", "quotes")),
-        ]);
+        // 2. siteContent docs for text content
+        const keys = ["aboutUs", "mission", "vision", "journey", "quotes"];
+        const docs = await Promise.all(
+          keys.map((k) => getDoc(doc(db, "siteContent", k)))
+        );
 
-        setContent({
-          aboutUs: aboutSnap.exists() ? aboutSnap.data().text : "",
-          mission: missionSnap.exists() ? missionSnap.data().text : "",
-          vision: visionSnap.exists() ? visionSnap.data().text : "",
-          journey: journeySnap.exists() ? journeySnap.data().text : "",
-          quotes: quotesSnap.exists() ? quotesSnap.data().text : "",
+        const loaded = {};
+        docs.forEach((snap, i) => {
+          loaded[keys[i]] = snap.exists() ? (snap.data().text || "") : "";
         });
 
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        setContent((c) => ({ ...c, ...loaded }));
+      } catch (err) {
+        console.error("Failed to load About page data:", err);
       } finally {
         setLoading(false);
       }
@@ -64,143 +70,301 @@ const AboutPage = () => {
     fetchData();
   }, []);
 
-  const siteConfigForFooter = config
-    ? { footerInfo: config.footerInfo || {} }
-    : { footerInfo: {} };
+  const siteFooterConfig = config ? { footerInfo: config.footerInfo || {} } : {};
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen flex items-center justify-center bg-orange-50">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </>
+    );
+  }
+
+  // Helpers: fallback content
+  const aboutText =
+    content.aboutUs ||
+    "Welcome to Yuma Foods. We bring fresh, wholesome goodness to your table with love and care.";
+  const missionText =
+    content.mission || "Delivering nutritious, fresh produce to every doorstep.";
+  const visionText =
+    content.vision ||
+    "Making sustainable and healthy food accessible to families everywhere.";
+  const journeyText = content.journey || "";
+  const quotesText =
+    content.quotes || "Community first. Quality always. Sustainability forever.";
 
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col">
+    <div className="min-h-screen bg-green-50 text-slate-900">
       <Navbar />
 
-      {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : (
-        <>
-          {/* Hero Section */}
-          <div className="relative h-[60vh] md:h-[70vh]">
-            <img
-              src={config?.aboutUsBannerImage || "/food_banner.png"}
-              alt="About Us Banner"
-              className="w-full h-full object-cover brightness-75"
-            />
-            <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4">
-              <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
-                About Yuma Foods
+      {/* HERO */}
+      <header
+        ref={heroRef}
+        className="relative overflow-hidden"
+        aria-label="About hero"
+      >
+        {/* background image with gradient overlay */}
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(8,64,26,0.35), rgba(92,226,107,0.12)), url(" +
+              (config?.aboutUsBannerImage || "/food_banner.png") +
+              ") center/cover no-repeat",
+            transform: `translateY(${heroShift}px)`,
+            transition: "transform 0.08s linear",
+          }}
+        />
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 md:py-28">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <div className="inline-flex items-center gap-3 bg-white/10 px-4 py-2 rounded-full mb-6 backdrop-blur-sm border border-white/10">
+                <span className="text-sm font-semibold text-green-50">About Us</span>
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#07602e] leading-tight drop-shadow-md">
+                Yuma Foods — Freshness & Tradition
               </h1>
-              <p className="mt-4 text-xl md:text-2xl text-orange-50 max-w-2xl font-medium drop-shadow-md">
-                Freshness, Quality, and Tradition Delivered to Your Doorstep
+
+              <p className="mt-6 text-lg md:text-xl text-[#07602e] max-w-xl leading-relaxed">
+                {aboutText}
               </p>
+
+              {/* <div className="mt-8 flex flex-wrap gap-3">
+                <button
+                  onClick={() => window.scrollTo({ top: 800, behavior: "smooth" })}
+                  className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 text-slate-900 font-semibold shadow-lg hover:scale-105 transition-transform"
+                >
+                  Explore Our Story
+                </button>
+
+              </div> */}
+            </div>
+
+            {/* Hero right: small feature cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <article className="bg-white/90 rounded-2xl p-5 shadow-md hover:shadow-xl transition transform hover:-translate-y-2">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-200 to-yellow-100 flex items-center justify-center">
+                    <Target className="w-6 h-6 text-green-800" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Our Mission</h4>
+                    <p className="text-sm text-slate-700 mt-1">{missionText}</p>
+                  </div>
+                </div>
+              </article>
+
+              <article className="bg-white/90 rounded-2xl p-5 shadow-md hover:shadow-xl transition transform hover:-translate-y-2">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-100 to-green-100 flex items-center justify-center">
+                    <Award className="w-6 h-6 text-green-800" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Our Vision</h4>
+                    <p className="text-sm text-slate-700 mt-1">{visionText}</p>
+                  </div>
+                </div>
+              </article>
+
+              <article className="col-span-full sm:col-span-2 bg-white/90 rounded-2xl p-5 shadow-md hover:shadow-xl transition flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-green-800" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-900">Our Values</h4>
+                  <p className="text-sm text-slate-700 mt-1">{quotesText}</p>
+                </div>
+              </article>
             </div>
           </div>
+        </div>
 
-          {/* Our Story & Journey Section */}
-          <section className="py-20 bg-[#ffffff]">
-            <div className="max-w-6xl mx-auto px-4 text-center">
-              
-              {/* About Us Content */}
-              <h2 className="text-3xl md:text-4xl font-bold text-[#57ba40] mb-6">
-                Our Story
-              </h2>
-              <p className="text-gray-700 text-lg leading-relaxed max-w-4xl mx-auto mb-8 whitespace-pre-wrap">
-                {content.aboutUs || "Welcome to Yuma Foods. We are dedicated to providing the best quality products."}
+        {/* decorative divider */}
+        <svg
+          className="-mb-1 w-full"
+          viewBox="0 0 1440 80"
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          <path
+            d="M0,40 C360,90 1080,-10 1440,40 L1440,80 L0,80 Z"
+            fill="#ffffff"
+            opacity="0.95"
+          />
+        </svg>
+      </header>
+
+      {/* OUR STORY */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-[#57ba40] mb-4">Our Story</h2>
+              <p className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap">
+                {aboutText}
               </p>
 
-              {/* Journey Content */}
-              {content.journey && (
-                <div className="mb-12">
-                   <p className="text-gray-600 italic text-lg max-w-3xl mx-auto whitespace-pre-wrap">
-                    "{content.journey}"
-                  </p>
-                </div>
+              {journeyText && (
+                <blockquote className="mt-6 pl-6 border-l-4 border-orange-300 text-slate-800 italic">
+                  {`"${journeyText}"`}
+                </blockquote>
               )}
 
-              {/* 3D Hover Gallery Integration */}
-              <div className="mt-10">
+              <div className="mt-6 flex gap-4">
+                <button
+                  onClick={() =>
+                    window.open("/collections/combos", "_self") // example navigation
+                  }
+                  className="px-6 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 text-slate-900 font-semibold shadow-md hover:scale-105 transition"
+                >
+                  Browse Combos
+                </button>
+
+                <a
+                  href="/contact"
+                  className="px-6 py-3 rounded-full bg-white border border-green-100 text-green-700 font-medium hover:bg-green-50 transition"
+                >
+                  Contact 
+                </a>
+              </div>
+            </div>
+
+            <div>
+              {/* Gallery preview */}
+              <div className="rounded-3xl overflow-hidden shadow-lg">
                 <ThreeDHoverGallery
                   images={[simg1, simg2, simg3, simg4, simg5]}
-                  itemWidth={12}
-                  itemHeight={18}
-                  hoverScale={12}
-                  activeWidth={40}
+                  itemWidth={14}
+                  itemHeight={20}
+                  hoverScale={14}
+                  activeWidth={46}
                   autoPlay={true}
-                  autoPlayDelay={4000}
-                  grayscaleStrength={0.8}
-                  brightnessLevel={0.6}
+                  autoPlayDelay={3800}
+                  grayscaleStrength={0.7}
+                  brightnessLevel={0.7}
                 />
               </div>
             </div>
-          </section>
+          </div>
+        </div>
 
-          {/* Mission, Vision & Quotes (Values) */}
-          <section className="py-20 bg-[#ffffff] border-t border-gray-100">
-            <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-              
-              {/* Mission */}
-              <div className="flex flex-col items-center p-6 rounded-xl hover:bg-orange-50 transition-colors duration-300">
-                <Target className="w-16 h-16 text-[#57ba40] mb-6" />
-                <h3 className="text-2xl font-bold mb-4 text-gray-800">Our Mission</h3>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                  {content.mission || "Our mission is to deliver quality food to every household."}
-                </p>
+        {/* subtle divider */}
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 mt-12">
+          <hr className="border-t border-dashed border-orange-100" />
+        </div>
+      </section>
+
+      {/* MISSION / VISION / VALUES */}
+      <section className="py-16 bg-green-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <h3 className="text-lg font-semibold text-green-700">What Drives Us</h3>
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-2">
+            Mission, Vision & Values
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
+            <div className="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition transform hover:-translate-y-2">
+              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center mx-auto">
+                <Target className="w-7 h-7 text-green-700" />
               </div>
-
-              {/* Vision (Mapped to Center Column) */}
-              <div className="flex flex-col items-center p-6 rounded-xl hover:bg-orange-50 transition-colors duration-300">
-                <Award className="w-16 h-16 text-[#57ba40] mb-6" />
-                <h3 className="text-2xl font-bold mb-4 text-gray-800">Our Vision</h3>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                  {content.vision || "We envision a world where healthy food is accessible to everyone."}
-                </p>
-              </div>
-
-              {/* Quotes / Community (Mapped to Third Column) */}
-              <div className="flex flex-col items-center p-6 rounded-xl hover:bg-orange-50 transition-colors duration-300">
-                <Users className="w-16 h-16 text-[#57ba40] mb-6" />
-                <h3 className="text-2xl font-bold mb-4 text-gray-800">Our Values</h3>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                  {content.quotes || "Community, Integrity, and Sustainability are at our core."}
-                </p>
-              </div>
-
+              <h4 className="mt-4 font-semibold text-slate-900">Mission</h4>
+              <p className="mt-2 text-slate-700 text-sm">{missionText}</p>
             </div>
-          </section>
 
-          {/* Meet the Team */}
-          {config?.teamMembers && config.teamMembers.length > 0 && (
-            <section className="py-20 bg-orange-100">
-              <div className="max-w-6xl mx-auto px-4">
-                <h2 className="text-4xl font-bold text-center text-orange-900 mb-16">
-                  Meet the Team
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                  {config.teamMembers.map((member, index) => (
-                    <div 
-                      key={index} 
-                      className="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 text-center"
-                    >
-                      <div className="w-32 h-32 mx-auto mb-6 relative">
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full rounded-full object-cover border-4 border-orange-200"
-                        />
-                      </div>
-                      <h4 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h4>
-                      <p className="text-orange-600 font-medium">{member.role}</p>
-                    </div>
-                  ))}
-                </div>
+            <div className="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition transform hover:-translate-y-2">
+              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center mx-auto">
+                <Award className="w-7 h-7 text-green-700" />
               </div>
-            </section>
-          )}
-        </>
+              <h4 className="mt-4 font-semibold text-slate-900">Vision</h4>
+              <p className="mt-2 text-slate-700 text-sm">{visionText}</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition transform hover:-translate-y-2">
+              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center mx-auto">
+                <Users className="w-7 h-7 text-green-700" />
+              </div>
+              <h4 className="mt-4 font-semibold text-slate-900">Values</h4>
+              <p className="mt-2 text-slate-700 text-sm">{quotesText}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TEAM */}
+      {config?.teamMembers && config.teamMembers.length > 0 && (
+        <section id="team" className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-slate-900 text-center mb-8">
+              Meet the Team
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {config.teamMembers.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="relative bg-gradient-to-br from-white to-green-50 rounded-2xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition"
+                >
+                  <div className="absolute -top-8 left-6 w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md">
+                    <img
+                      src={m.image}
+                      alt={m.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <div className="pt-12 text-center">
+                    <h4 className="text-xl font-bold text-slate-900">{m.name}</h4>
+                    <p className="mt-1 text-sm text-orange-600 font-medium">{m.role}</p>
+                    <p className="mt-3 text-sm text-slate-700 leading-relaxed">{m.bio}</p>
+
+                    <div className="mt-5 flex items-center justify-center gap-3">
+                      <a
+                        href={m.linkedin || "#"}
+                        aria-label={`${m.name} linkedin`}
+                        className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow hover:scale-105 transition"
+                      >
+                        {/* small icon placeholder */}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M4 3h4v18H4zM6 0a2 2 0 11-.001 4.001A2 2 0 016 0zM10 8h4v2h.1c.6-1.1 2.1-2.3 4.3-2.3 4.6 0 5.4 3 5.4 6.9V21h-4v-6.5c0-1.6 0-3.6-2.2-3.6-2.2 0-2.6 1.8-2.6 3.5V21h-4V8z" fill="#0f5132"/>
+                        </svg>
+                      </a>
+                      <a href={m.twitter || "#"} className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow hover:scale-105 transition">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 5.9c-.6.3-1.2.5-1.9.6.7-.5 1.2-1.2 1.4-2.1-.7.4-1.5.7-2.4.9C18.5 4 17.3 3.5 16 3.5c-2.2 0-4 1.8-4 4 0 .3 0 .5.1.8C8.6 8 6 6.6 4.3 4.4c-.4.8-.6 1.6-.6 2.5 0 1.6.8 3.1 2 3.9-.5 0-1-.1-1.4-.4v.1c0 2.4 1.7 4.4 3.8 4.9-.4.1-.8.2-1.3.2-.3 0-.6 0-.9-.1.6 1.8 2.2 3.2 4.1 3.3-1.5 1.1-3.4 1.7-5.4 1.7-.4 0-.8 0-1.1-.1 2 1.3 4.4 2 6.9 2 8.3 0 12.8-6.9 12.8-12.8v-.6c.9-.6 1.6-1.4 2.1-2.3-.8.4-1.6.6-2.5.6z" fill="#0f5132"/></svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* <Footer config={siteConfigForFooter} /> */}
+      {/* CTA */}
+      <section className="py-12 bg-gradient-to-r from-yellow-200 to-green-100">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="text-2xl font-bold text-slate-900">Ready to taste the goodness?</h3>
+            <p className="mt-1 text-slate-700">Order today and feel the freshness at your doorstep.</p>
+          </div>
+          <div className="flex gap-4">
+            <a href="/shop" className="px-6 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 font-semibold shadow">
+              Shop Now
+            </a>
+            {/* <a href="/contact" className="px-6 py-3 rounded-full bg-white border border-green-100 text-green-700">
+              Contact Sales
+            </a> */}
+          </div>
+        </div>
+      </section>
+
+      {/* Optional Footer */}
+      {/* <Footer config={siteFooterConfig} /> */}
     </div>
   );
-};
-
-export default AboutPage;
+}
