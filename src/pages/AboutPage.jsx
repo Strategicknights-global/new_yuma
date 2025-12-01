@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer"; // uncomment if used
 import { Award, Users, Target } from "lucide-react";
 import ThreeDHoverGallery from "../components/ThreeDHoverGallery";
-
+import EcommerceTimeline from "./components/EcommerceTimeline";
 // story images (adjust paths if required)
 import simg1 from "../assets/simg1.jpg";
 import simg2 from "../assets/simg2.jpg";
@@ -86,15 +86,15 @@ export default function AboutPage() {
   // Helpers: fallback content
   const aboutText =
     content.aboutUs ||
-    "Welcome to Yuma Foods. We bring fresh, wholesome goodness to your table with love and care.";
+    "From a humble kitchen 2018 to 100+ wholesome products today-yuma's is where Tradition Meets Health";
   const missionText =
-    content.mission || "Delivering nutritious, fresh produce to every doorstep.";
+    content.mission || "Reving forgotten grains and recipes to bring back the taste and health of tradition";
   const visionText =
     content.vision ||
-    "Making sustainable and healthy food accessible to families everywhere.";
+    "To make preservative-free , authentic foods a natural choice in every home";
   const journeyText = content.journey || "";
   const quotesText =
-    content.quotes || "Community first. Quality always. Sustainability forever.";
+    content.quotes || "To make preservative-free , authentic foods a natural choice in every home";
 
   return (
     <div className="min-h-screen bg-green-50 text-slate-900">
@@ -145,7 +145,6 @@ export default function AboutPage() {
               </div> */}
             </div>
 
-            {/* Hero right: small feature cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <article className="bg-white/90 rounded-2xl p-5 shadow-md hover:shadow-xl transition transform hover:-translate-y-2">
                 <div className="flex items-center gap-4">
@@ -183,8 +182,6 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-
-        {/* decorative divider */}
         <svg
           className="-mb-1 w-full"
           viewBox="0 0 1440 80"
@@ -198,9 +195,7 @@ export default function AboutPage() {
           />
         </svg>
       </header>
-
-      {/* OUR STORY */}
-      <section className="py-16 bg-white">
+      {/* <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -235,7 +230,6 @@ export default function AboutPage() {
             </div>
 
             <div>
-              {/* Gallery preview */}
               <div className="rounded-3xl overflow-hidden shadow-lg">
                 <ThreeDHoverGallery
                   images={[simg1, simg2, simg3, simg4, simg5]}
@@ -254,10 +248,37 @@ export default function AboutPage() {
         </div>
 
         {/* subtle divider */}
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 mt-12">
+        {/* <div className="max-w-6xl mx-auto px-6 lg:px-8 mt-12">
           <hr className="border-t border-dashed border-orange-100" />
         </div>
+      </section> */} 
+      <section className="bg-[#ffffff] text-center py-6">
+        <button
+                  className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 text-slate-900 font-semibold shadow-lg hover:scale-105 transition-transform"
+                >
+                  Explore Our Story
+                </button>
+              <h1 className="
+  text-xl 
+  sm:text-2xl 
+  md:text-3xl 
+  lg:text-[20px]
+mt-8
+  text-gray-800 
+  leading-relaxed 
+  text-center 
+  px-4
+  font-['Poppins']
+">
+  What began as a humble kitchen venture has now grown into <br></br>
+  <span className="text-[#57ba40] font-bold"> 100+ healthy products</span>, <br></br>
+  trusted by families who seek purity, authenticity, and nutrition.
+</h1>
+
+         <EcommerceTimeline/>
+      
       </section>
+   
 
       {/* MISSION / VISION / VALUES */}
       <section className="py-16 bg-green-50">

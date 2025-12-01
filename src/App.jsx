@@ -4,9 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Policies from "./pages/components/Policies";
-
-
-// Import all pages and components
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 import ProductDetailPage from './components/ProductDetailPage';
@@ -18,7 +15,7 @@ import ProfilePage from './pages/ProfilePage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import OrderDetailPage from './pages/OrderDetailPage';
-import Orders from './pages/Orders';          // ✅ Import Orders page
+import Orders from './pages/Orders';         
 import Wishlist from './pages/Wishlist.jsx';
 import BulkEnquiry from './pages/BulkEnquiry.jsx';  //
 
