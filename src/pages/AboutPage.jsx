@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase"; // adjust path if needed
+import { db } from "../../firebase"; 
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer"; // uncomment if used
+import Footer from "../components/Footer"; 
 import { Award, Users, Target } from "lucide-react";
 import ThreeDHoverGallery from "../components/ThreeDHoverGallery";
 import EcommerceTimeline from "./components/EcommerceTimeline";
-// story images (adjust paths if required)
 import simg1 from "../assets/simg1.jpg";
 import simg2 from "../assets/simg2.jpg";
 import simg3 from "../assets/simg3.jpg";
@@ -25,12 +24,9 @@ export default function AboutPage() {
   const [loading, setLoading] = useState(true);
   const heroRef = useRef(null);
   const [heroShift, setHeroShift] = useState(0);
-
-  // Parallax effect on hero
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      // small gentle parallax
       setHeroShift(Math.min(30, Math.max(-30, y * 0.06)));
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -41,14 +37,11 @@ export default function AboutPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. siteConfiguration/mainConfig (images, team)
         const configRef = doc(db, "siteConfiguration", "mainConfig");
         const configSnap = await getDoc(configRef);
         if (configSnap.exists()) {
           setConfig(configSnap.data());
         }
-
-        // 2. siteContent docs for text content
         const keys = ["aboutUs", "mission", "vision", "journey", "quotes"];
         const docs = await Promise.all(
           keys.map((k) => getDoc(doc(db, "siteContent", k)))
@@ -83,7 +76,6 @@ export default function AboutPage() {
     );
   }
 
-  // Helpers: fallback content
   const aboutText =
     content.aboutUs ||
     "From a humble kitchen 2018 to 100+ wholesome products today-yuma's is where Tradition Meets Health";
@@ -100,13 +92,11 @@ export default function AboutPage() {
     <div className="min-h-screen bg-green-50 text-slate-900">
       <Navbar />
 
-      {/* HERO */}
       <header
         ref={heroRef}
         className="relative overflow-hidden"
         aria-label="About hero"
       >
-        {/* background image with gradient overlay */}
         <div
           className="absolute inset-0 -z-10"
           style={{
@@ -127,22 +117,13 @@ export default function AboutPage() {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#07602e] leading-tight drop-shadow-md">
-                Yuma Foods — Freshness & Tradition
+                Yuma's Foods — Freshness & Tradition
               </h1>
 
               <p className="mt-6 text-lg md:text-xl text-[#07602e] max-w-xl leading-relaxed">
                 {aboutText}
               </p>
 
-              {/* <div className="mt-8 flex flex-wrap gap-3">
-                <button
-                  onClick={() => window.scrollTo({ top: 800, behavior: "smooth" })}
-                  className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 text-slate-900 font-semibold shadow-lg hover:scale-105 transition-transform"
-                >
-                  Explore Our Story
-                </button>
-
-              </div> */}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -195,63 +176,7 @@ export default function AboutPage() {
           />
         </svg>
       </header>
-      {/* <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-[#57ba40] mb-4">Our Story</h2>
-              <p className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap">
-                {aboutText}
-              </p>
-
-              {journeyText && (
-                <blockquote className="mt-6 pl-6 border-l-4 border-orange-300 text-slate-800 italic">
-                  {`"${journeyText}"`}
-                </blockquote>
-              )}
-
-              <div className="mt-6 flex gap-4">
-                <button
-                  onClick={() =>
-                    window.open("/collections/combos", "_self") // example navigation
-                  }
-                  className="px-6 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 text-slate-900 font-semibold shadow-md hover:scale-105 transition"
-                >
-                  Browse Combos
-                </button>
-
-                <a
-                  href="/contact"
-                  className="px-6 py-3 rounded-full bg-white border border-green-100 text-green-700 font-medium hover:bg-green-50 transition"
-                >
-                  Contact 
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <div className="rounded-3xl overflow-hidden shadow-lg">
-                <ThreeDHoverGallery
-                  images={[simg1, simg2, simg3, simg4, simg5]}
-                  itemWidth={14}
-                  itemHeight={20}
-                  hoverScale={14}
-                  activeWidth={46}
-                  autoPlay={true}
-                  autoPlayDelay={3800}
-                  grayscaleStrength={0.7}
-                  brightnessLevel={0.7}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* subtle divider */}
-        {/* <div className="max-w-6xl mx-auto px-6 lg:px-8 mt-12">
-          <hr className="border-t border-dashed border-orange-100" />
-        </div>
-      </section> */} 
+   
       <section className="bg-[#ffffff] text-center py-6">
         <button
                   className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 text-slate-900 font-semibold shadow-lg hover:scale-105 transition-transform"
@@ -278,9 +203,7 @@ mt-8
          <EcommerceTimeline/>
       
       </section>
-   
 
-      {/* MISSION / VISION / VALUES */}
       <section className="py-16 bg-green-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
           <h3 className="text-lg font-semibold text-green-700">What Drives Us</h3>
@@ -315,8 +238,6 @@ mt-8
           </div>
         </div>
       </section>
-
-      {/* TEAM */}
       {config?.teamMembers && config.teamMembers.length > 0 && (
         <section id="team" className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -349,7 +270,6 @@ mt-8
                         aria-label={`${m.name} linkedin`}
                         className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow hover:scale-105 transition"
                       >
-                        {/* small icon placeholder */}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                           <path d="M4 3h4v18H4zM6 0a2 2 0 11-.001 4.001A2 2 0 016 0zM10 8h4v2h.1c.6-1.1 2.1-2.3 4.3-2.3 4.6 0 5.4 3 5.4 6.9V21h-4v-6.5c0-1.6 0-3.6-2.2-3.6-2.2 0-2.6 1.8-2.6 3.5V21h-4V8z" fill="#0f5132"/>
                         </svg>
@@ -365,8 +285,6 @@ mt-8
           </div>
         </section>
       )}
-
-      {/* CTA */}
       <section className="py-12 bg-gradient-to-r from-yellow-200 to-green-100">
         <div className="max-w-6xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
@@ -374,18 +292,13 @@ mt-8
             <p className="mt-1 text-slate-700">Order today and feel the freshness at your doorstep.</p>
           </div>
           <div className="flex gap-4">
-            <a href="/shop" className="px-6 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 font-semibold shadow">
+            <a href="/products" className="px-6 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-green-500 font-semibold shadow">
               Shop Now
             </a>
-            {/* <a href="/contact" className="px-6 py-3 rounded-full bg-white border border-green-100 text-green-700">
-              Contact Sales
-            </a> */}
           </div>
         </div>
       </section>
 
-      {/* Optional Footer */}
-      {/* <Footer config={siteFooterConfig} /> */}
     </div>
   );
 }

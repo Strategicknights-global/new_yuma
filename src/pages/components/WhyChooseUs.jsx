@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { Sprout, Package, Hand, Leaf, Truck, Star } from "lucide-react";
+import googleicon from "../../assets/googleicon.png";
 
 const features = [
-  { 
-    icon: Sprout, 
-    title: "From Trusted Farmers", 
+  {
+    icon: Sprout,
+    title: "From Trusted Farmers",
     description: "We source the best ingredients from farmers we trust.",
   },
-  { 
-    icon: Package, 
-    title: "Freshly Packed", 
-    description: "Our products are packed with care to ensure maximum freshness.",
+  {
+    icon: Package,
+    title: "Freshly Packed",
+    description:
+      "Our products are packed with care to ensure maximum freshness.",
   },
-  { 
-    icon: Hand, 
-    title: "Hand Picked Ingredients", 
+  {
+    icon: Hand,
+    title: "Hand Picked Ingredients",
     description: "Each ingredient is carefully chosen by hand for quality.",
   },
-  { 
-    icon: Leaf, 
-    title: "100% Organic", 
+  {
+    icon: Leaf,
+    title: "100% Organic",
     description: "We use only organic ingredients for healthy, tasty food.",
   },
-  { 
-    icon: Truck, 
-    title: "Door Step Delivery", 
+  {
+    icon: Truck,
+    title: "Door Step Delivery",
     description: "Enjoy our fresh products delivered right to your door.",
   },
 ];
@@ -229,25 +231,21 @@ const WhyChooseUs = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-16">
             {features.map((feature, index) => {
               const Icon = feature.icon;
-              
+
               return (
-                <div
-                  key={index}
-                  className={`stagger-${index + 1} text-center`}
-                >
+                <div key={index} className={`stagger-${index + 1} text-center`}>
                   <div>
                     {/* Icon Circle */}
                     {/* <div className="w-20 h-20 mx-auto bg-[#57ba40]/10 rounded-full flex items-center justify-center mb-4">
                      
                     </div> */}
-                     <Icon className="w-10 h-10 text-[#ef0e0eff] flex items-center justify-center mx-auto  mb-4 " />
-                     
-                    
+                    <Icon className="w-10 h-10 text-[#ef0e0eff] flex items-center justify-center mx-auto  mb-4 " />
+
                     {/* Title */}
                     <h3 className="text-sm font-bold text-slate-900 mb-2">
                       {feature.title}
                     </h3>
-                    
+
                     {/* Description */}
                     <p className="text-xs text-slate-600 leading-relaxed px-2">
                       {feature.description}
@@ -279,9 +277,7 @@ const WhyChooseUs = () => {
             {/* 100% Organic */}
             <div className="stat-card bg-gradient-to-br from-[#57ba40] to-[#469636] rounded-2xl p-8 text-center text-white shadow-lg relative overflow-hidden">
               <div className="relative z-10">
-                <div className="text-5xl font-bold mb-2">
-                  100%
-                </div>
+                <div className="text-5xl font-bold mb-2">100%</div>
                 <div className="text-sm font-medium text-white/90">
                   Organic Products
                 </div>
@@ -290,39 +286,40 @@ const WhyChooseUs = () => {
               <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
               <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full"></div>
             </div>
-
-            {/* Customer Rating */}
             <div className="stat-card bg-gradient-to-br from-[#57ba40] to-[#4aa838] rounded-2xl p-8 text-center text-white shadow-lg relative overflow-hidden">
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1 rounded-full shadow-lg z-20 bg-white">
+                <img src={googleicon} alt="" className="w-4 h-4" />
+                <div className="flex gap-0.5 text-[#000000] flex justify-content-center align-items-center">
+                 As per review
+                </div>
+              </div>
 
-  {/* Highlight Tag */}
-  <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-white text-[#57ba40] text-xs font-semibold px-3 py-1 rounded-full shadow-md z-20">
-    As per Google Reviews
-  </div>
+              <div className="relative z-10 mt-6">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="text-5xl font-bold">{rating.toFixed(1)}</div>
+                  <Star className="w-10 h-10 fill-white" />
+                </div>
+                <div className="text-sm font-medium text-white/90">
+                  Customer Rating
+                </div>
+                <div className="w-16 h-1 bg-white/30 mx-auto mt-3 rounded-full"></div>
+              </div>
 
-  <div className="relative z-10 mt-6">
-    <div className="flex items-center justify-center gap-2 mb-2">
-      <div className="text-5xl font-bold">
-        {rating.toFixed(1)}
-      </div>
-      <Star className="w-10 h-10 fill-white" />
-    </div>
-    <div className="text-sm font-medium text-white/90">
-      Customer Rating
-    </div>
-    <div className="w-16 h-1 bg-white/30 mx-auto mt-3 rounded-full"></div>
-  </div>
-
-  <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
-  <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full"></div>
-</div>
-
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
+              <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full"></div>
+            </div>
           </div>
 
           {/* Trust Badge */}
-          <div className="mt-12 text-center fade-in-up" style={{ animationDelay: '0.6s' }}>
+          <div
+            className="mt-12 text-center fade-in-up"
+            style={{ animationDelay: "0.6s" }}
+          >
             <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#57ba40] to-[#3d8a2d] text-white px-8 py-4 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
               <Leaf className="w-6 h-6" />
-              <span className="font-semibold">Trusted by 3,000+ Customers Nationwide</span>
+              <span className="font-semibold">
+                Trusted by 3,000+ Customers Nationwide
+              </span>
             </div>
           </div>
         </div>

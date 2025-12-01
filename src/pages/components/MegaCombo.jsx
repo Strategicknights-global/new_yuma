@@ -134,7 +134,7 @@ export default function MegaComboBanner({ title = 'Mega Combo Packs', limit = 20
 
           {products.length === 0 && (
             <div className="text-white/80 py-10 px-4">
-             Comming Soon.......
+             Coming Soon.......
             </div>
           )}
 

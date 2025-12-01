@@ -12,9 +12,9 @@ import {
   where,
   getDocs,
   limit,
+  orderBy,
   addDoc,
   serverTimestamp,
-  orderBy,
   documentId,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -23,8 +23,6 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { Heart, CheckCircle, XCircle, Star } from 'lucide-react';
-
-// A reusable component to display star ratings
 const StarRating = ({ rating, size = 'w-5 h-5' }) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 !== 0;
@@ -57,27 +55,18 @@ const ProductDetailPage = () => {
   const [notification, setNotification] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [wishlist, setWishlist] = useState([]);
-  
-  // --- State for Recommendations and Reviews ---
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  
-  // --- State for Review Form ---
   const [newReviewName, setNewReviewName] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(0);
   const [newReviewComment, setNewReviewComment] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
   const [wordCount, setWordCount] = useState(0);
   const MAX_WORDS = 200;
-
-
   const buttonRef = useRef(null);
-
-  // Fetch main product details
   useEffect(() => {
-    // Scroll to top when a new product page is loaded
-    window.scrollTo(0, 0);
+    if (!id) return;
 
     const fetchProduct = async () => {
       try {
@@ -89,8 +78,7 @@ const ProductDetailPage = () => {
           const productData = { id: productSnap.id, ...productSnap.data() };
           setProduct(productData);
           setSelectedImageIndex(0);
-
-          if (productData.variants && productData.variants.length > 0) {
+          if (productData.variants?.length > 0) {
             setSelectedVariant(productData.variants[0]);
           }
         } else {
@@ -103,41 +91,47 @@ const ProductDetailPage = () => {
         setLoading(false);
       }
     };
-    if (id) {
-      fetchProduct();
-      setReviews([]);
-      setRecommendedProducts([]);
-    }
-  }, [id]);
 
-  // Fetch Recommended Products based on category
+    fetchProduct();
+  }, [id]);
   useEffect(() => {
-    if (!product || !product.categoryId) return;
-    
-    const fetchRecommendations = async () => {
+    if (!product || !id) return;
+
+    const fetchRelatedProducts = async () => {
       try {
-        const productsRef = collection(db, 'products');
-        const q = query(
-          productsRef, 
-          where('categoryId', '==', product.categoryId), 
-          where(documentId(), '!=', product.id),
-          limit(10)
-        );
-        const querySnapshot = await getDocs(q);
-        const recs = [];
-        querySnapshot.forEach((doc) => {
-          recs.push({ id: doc.id, ...doc.data() });
+        const productsRef = collection(db, "products");
+        let related = [];
+        if (product.category) {
+          const q = query(
+            productsRef,
+            where("category", "==", product.category),
+            where(documentId(), "!=", id),
+            limit(10)
+          );
+          const snapshot = await getDocs(q);
+          snapshot.forEach((doc) => related.push({ id: doc.id, ...doc.data() }));
+        }
+        const otherQ = query(productsRef, where(documentId(), "!=", id), limit(10));
+        const otherSnap = await getDocs(otherQ);
+        otherSnap.forEach((doc) => {
+          if (!related.find((r) => r.id === doc.id)) {
+            related.push({ id: doc.id, ...doc.data() });
+          }
         });
-        setRecommendedProducts(recs);
+        related.sort((a, b) => {
+          if (a.category === product.category && b.category !== product.category) return -1;
+          if (a.category !== product.category && b.category === product.category) return 1;
+          return 0;
+        });
+
+        setRecommendedProducts(related);
       } catch (err) {
-        console.error("Failed to fetch recommendations:", err);
+        console.error("Failed to fetch related products:", err);
       }
     };
 
-    fetchRecommendations();
-  }, [product]);
-
-  // Fetch Product Reviews in real-time
+    fetchRelatedProducts();
+  }, [product, id]);
   useEffect(() => {
     if (!id) return;
 
@@ -150,56 +144,33 @@ const ProductDetailPage = () => {
         fetchedReviews.push({ id: doc.id, ...doc.data() });
       });
       setReviews(fetchedReviews);
-    }, (err) => {
-        console.error("Error fetching reviews:", err);
-    });
+    }, (err) => console.error("Error fetching reviews:", err));
 
     return () => unsubscribe();
   }, [id]);
-
-  // Fetch user wishlist
   useEffect(() => {
-    if (!user) {
-      setWishlist([]);
-      return;
-    }
+    if (!user) return setWishlist([]);
     const userRef = doc(db, 'users', user.uid);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setWishlist(docSnap.data().wishlist || []);
-      }
+      if (docSnap.exists()) setWishlist(docSnap.data().wishlist || []);
     });
     return () => unsubscribe();
   }, [user]);
-
-  // Pre-fill review name if user is logged in
   useEffect(() => {
-    if (isLoggedIn && user) {
-        setNewReviewName(user.displayName || '');
-    }
+    if (isLoggedIn && user) setNewReviewName(user.displayName || '');
   }, [user, isLoggedIn]);
-
-  // Calculate average rating
   const averageRating = useMemo(() => {
     if (reviews.length === 0) return 0;
-    const total = reviews.reduce((acc, review) => acc + review.rating, 0);
+    const total = reviews.reduce((acc, r) => acc + r.rating, 0);
     return (total / reviews.length).toFixed(1);
   }, [reviews]);
-
-  const showNotification = (message) => {
-    setNotification(message);
+  const showNotification = (msg) => {
+    setNotification(msg);
     setTimeout(() => setNotification(''), 3000);
   };
-
   const handleAddToCart = () => {
-    if (!isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
-    if (!product?.inStock) {
-      showNotification('This product is out of stock.');
-      return;
-    }
+    if (!isLoggedIn) return setShowLoginModal(true);
+    if (!product?.inStock) return showNotification('This product is out of stock.');
     addToCart(product, quantity, selectedVariant);
     const displayName = selectedVariant ? `${product.name} (${selectedVariant.size})` : product.name;
     showNotification(`${quantity} x ${displayName} added to cart!`);
@@ -211,10 +182,7 @@ const ProductDetailPage = () => {
   };
 
   const handleWishlistToggle = async () => {
-    if (!isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
+    if (!isLoggedIn) return setShowLoginModal(true);
     try {
       const userRef = doc(db, 'users', user.uid);
       if (wishlist.includes(product.id)) {
@@ -229,55 +197,42 @@ const ProductDetailPage = () => {
       showNotification('Failed to update wishlist.');
     }
   };
-
-  // Handle changes in the review comment textarea
   const handleCommentChange = (e) => {
     const text = e.target.value;
     const currentWords = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-    
     if (currentWords <= MAX_WORDS) {
-        setNewReviewComment(text);
-        setWordCount(currentWords);
+      setNewReviewComment(text);
+      setWordCount(currentWords);
     } else {
-        showNotification(`Your review cannot exceed ${MAX_WORDS} words.`);
+      showNotification(`Your review cannot exceed ${MAX_WORDS} words.`);
     }
   };
 
-  // Handle Review Submission
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    if (!isLoggedIn) {
-        showNotification("Please log in to submit a review.");
-        return;
-    }
-    if (newReviewName.trim() === '' || newReviewRating === 0 || newReviewComment.trim() === '') {
-        showNotification("Please fill out your name, rating, and comment.");
-        return;
-    }
-    if (wordCount > MAX_WORDS) {
-        showNotification(`Review must be ${MAX_WORDS} words or less.`);
-        return;
-    }
+    if (!isLoggedIn) return showNotification("Please log in to submit a review.");
+    if (!newReviewName.trim() || !newReviewRating || !newReviewComment.trim()) return showNotification("Please fill all fields.");
+    if (wordCount > MAX_WORDS) return showNotification(`Review must be ${MAX_WORDS} words or less.`);
 
     setReviewSubmitting(true);
     try {
-        const reviewsCollectionRef = collection(db, 'products', product.id, 'reviews');
-        await addDoc(reviewsCollectionRef, {
-            userId: user.uid,
-            userName: newReviewName.trim(),
-            rating: newReviewRating,
-            comment: newReviewComment.trim(),
-            createdAt: serverTimestamp(),
-        });
-        showNotification("Review submitted successfully!");
-        setNewReviewRating(0);
-        setNewReviewComment('');
-        setWordCount(0);
+      const reviewsCollectionRef = collection(db, 'products', product.id, 'reviews');
+      await addDoc(reviewsCollectionRef, {
+        userId: user.uid,
+        userName: newReviewName.trim(),
+        rating: newReviewRating,
+        comment: newReviewComment.trim(),
+        createdAt: serverTimestamp(),
+      });
+      showNotification("Review submitted successfully!");
+      setNewReviewRating(0);
+      setNewReviewComment('');
+      setWordCount(0);
     } catch (err) {
-        console.error("Error submitting review:", err);
-        showNotification("Failed to submit review.");
+      console.error("Error submitting review:", err);
+      showNotification("Failed to submit review.");
     } finally {
-        setReviewSubmitting(false);
+      setReviewSubmitting(false);
     }
   };
 
@@ -411,26 +366,22 @@ const ProductDetailPage = () => {
             {/* ✅ FIX 1: Centered the title */}
             <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">You Might Also Like</h2>
             <div className="flex overflow-x-auto space-x-6 pb-4">
-              {recommendedProducts.map(recProduct => {
-                // ✅ FIX 2: Correctly get the price from variants or top-level field
+   {recommendedProducts.map((recProduct) => {
                 const recommendedPrice = recProduct.variants?.[0]?.discountPrice ?? recProduct.variants?.[0]?.price ?? recProduct.price;
                 return (
-                  // ✅ FIX 4: Corrected link from "/products/" to "/product/"
-                  <Link to={`/products/${recProduct.id}`} key={recProduct.id} className="flex-shrink-0 w-64 group">
+                  <Link to={`/product/${recProduct.id}`} key={recProduct.id} className="flex-shrink-0 w-64 group">
                     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 group-hover:scale-105 h-full">
                       <img src={recProduct.images?.[0]} alt={recProduct.name} className="w-full h-48 object-cover" />
-                      {/* ✅ FIX 3: Centered text content for name and price */}
                       <div className="p-4 text-center">
                         <h3 className="text-md font-semibold text-gray-800 truncate group-hover:text-red-600">{recProduct.name}</h3>
-                        {recommendedPrice && (
-                           <p className="text-lg font-bold text-red-500 mt-2">₹{recommendedPrice}</p>
-                        )}
+                        {recommendedPrice && <p className="text-lg font-bold text-red-500 mt-2">₹{recommendedPrice}</p>}
                       </div>
                     </div>
                   </Link>
                 );
               })}
-            </div>
+</div>
+
           </div>
         )}
       </main>

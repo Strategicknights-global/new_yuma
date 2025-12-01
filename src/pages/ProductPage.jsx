@@ -40,38 +40,37 @@ const getDiscountPercentage = (product) => {
   }
   return 0;
 };
+const ProductCard = ({
+  product,
+  isWishlisted,
+  onToggleWishlist,
+  onAddToCart,
+  onBuyNow,
+}) => {
+  const navigate = useNavigate();
+  const buttonRef = useRef(null);
 
-// --- SUB-COMPONENT: PRODUCT CARD ---
-const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onBuyNow }) => {
-  const navigate = useNavigate(); // ✅ Hook for navigation
-  const buttonRef = useRef(null); 
-  
   const price = getProductPrice(product);
   const discountPercentage = getDiscountPercentage(product);
   const isInStock = product.inStock;
-
-  // Get original price logic
   let originalPrice = null;
   if (product.variants && product.variants.length > 0) {
     originalPrice = product.variants[0].price;
   } else {
     originalPrice = product.originalPrice;
   }
-
-  // ✅ Handle Card Click to Navigate
   const handleCardClick = () => {
     navigate(`/products/${product.id}`);
   };
 
   return (
-    <div 
-      onClick={handleCardClick} // ✅ Make the whole div clickable
-      className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative w-full flex flex-col group cursor-pointer"
+    <div
+      onClick={handleCardClick}
+      className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative max-w-[250px] w-full flex flex-col group cursor-pointer"
     >
-      {/* Wishlist Button */}
       <button
         onClick={(e) => {
-          e.stopPropagation(); // ✅ Prevents navigating when clicking wishlist
+          e.stopPropagation();
           onToggleWishlist(product);
         }}
         className="absolute top-3 right-3 z-20 bg-white rounded-full p-2 shadow hover:bg-gray-100 transition"
@@ -82,28 +81,26 @@ const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onB
           }`}
         />
       </button>
-
-      {/* Badge Container */}
-      <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-       
-          <>
-            {product.inStock && (
-            <div className="bg-[#57ba40] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-              <Truck size={12} className="text-teal-100" />
-              <span>Free Shipping</span>
-            </div>
-            )}
-            {discountPercentage > 0 && (
-              <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1 w-fit">
-                <Tag size={12} className="text-orange-100" />
-                <span>{Math.round(discountPercentage)}% OFF</span>
-              </div>
-            )}
-          </>
+       <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
+                        
+                          <>
+                          {product.inStock && (
+          <div className="bg-[#57ba40] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
+                              <Truck size={12} className="text-teal-100" />
+                              <span className="text-[13px]">Free Shipping</span>
+                            </div>
+      )}
       
-      </div>
-
-      {/* Image - Removed Link wrapper since div is clickable */}
+                          
+                            {discountPercentage > 0 && (
+                              <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1 w-fit">
+                                <Tag size={12} className="text-orange-100" />
+                                <span>{Math.round(discountPercentage)}% OFF</span>
+                              </div>
+                            )}
+                          </>
+                       
+                      </div>
       <div className="block overflow-hidden rounded-t-xl">
         <img
           src={product.images?.[0]}
@@ -124,17 +121,17 @@ const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onB
             </div>
           )}
         </div>
-
-        {/* Buttons Container */}
         <div className="flex justify-center space-x-2 mt-auto">
           <button
             ref={buttonRef}
             onClick={(e) => {
-                e.stopPropagation(); // ✅ Prevents navigating when clicking Add to Cart
-                onAddToCart(product, buttonRef);
+              e.stopPropagation();
+              onAddToCart(product, buttonRef);
             }}
             disabled={!isInStock}
-            className={`cart-button ${!isInStock ? "disabled-out-of-stock" : ""}`}
+            className={`cart-button ${
+              !isInStock ? "disabled-out-of-stock" : ""
+            }`}
           >
             {isInStock ? (
               <>
@@ -148,23 +145,21 @@ const ProductCard = ({ product, isWishlisted, onToggleWishlist, onAddToCart, onB
             )}
           </button>
 
-         {isInStock && (
-  <button
-    onClick={() => handleBuyNow(p)}
-    className="text-white px-4 py-2 rounded-lg bg-[#57ba40] 
+          {isInStock && (
+            <button
+              onClick={() => handleBuyNow(p)}
+              className="text-white px-4 py-2 rounded-lg bg-[#57ba40] 
                hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40]
                hover:text-[#57ba40] transition"
-  >
-    Buy Now
-  </button>
-)}
+            >
+              Buy Now
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
-// --- MAIN COMPONENT ---
 const ProductPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -185,7 +180,6 @@ const ProductPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // 1. Fetch Wishlist Real-time
   useEffect(() => {
     if (!user) {
       setWishlist([]);
@@ -201,8 +195,6 @@ const ProductPage = () => {
     });
     return () => unsubscribe();
   }, [user]);
-
-  // 2. Fetch Products & Categories
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -227,8 +219,6 @@ const ProductPage = () => {
     };
     fetchData();
   }, []);
-
-  // 3. Handle URL Params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryName = params.get("category");
@@ -244,8 +234,6 @@ const ProductPage = () => {
     setPriceRange(Number(params.get("price")) || 5000);
     setCurrentPage(Number(params.get("page")) || 1);
   }, [location.search, categories]);
-
-  // 4. Sync Filters to URL
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("search", searchTerm);
@@ -272,8 +260,6 @@ const ProductPage = () => {
     location.pathname,
     categories,
   ]);
-
-  // 5. Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     let filtered = products
       .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -309,8 +295,6 @@ const ProductPage = () => {
     (currentPage - 1) * PRODUCTS_PER_PAGE,
     currentPage * PRODUCTS_PER_PAGE
   );
-
-  // --- ACTIONS ---
   const showNotification = (message) => {
     setNotification(message);
     setTimeout(() => setNotification(""), 3000);
@@ -341,11 +325,6 @@ const ProductPage = () => {
       showNotification(`${product.name} is currently out of stock`);
       return;
     }
-    if (!isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
-
     const variant =
       product.variants && product.variants.length > 0
         ? product.variants[0]
@@ -409,7 +388,9 @@ const ProductPage = () => {
   const FilterPanel = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="font-semibold mb-3 text-lg text-[#000000]">Categories</h3>
+        <h3 className="font-semibold mb-3 text-lg text-[#000000]">
+          Categories
+        </h3>
         <div className="space-y-2">
           {categories.map((cat) => (
             <label
@@ -486,8 +467,6 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-[#ffffff] flex flex-col relative">
       <Navbar />
-
-      {/* STYLES */}
       <style>{`
         .cart-button {
           position: relative;
@@ -538,7 +517,7 @@ const ProductPage = () => {
           transform: translate(-50%,-50%);
           white-space: nowrap;
         }
-        .cart-button span.add-to-cart { opacity: 1; }
+        .cart-button span.add-to-cart{ opacity: 1;font-size: 16px; white-space: nowrap; }
         .cart-button span.added { opacity: 0; }
 
         .cart-button.clicked .fa-shopping-cart {
@@ -608,8 +587,6 @@ const ProductPage = () => {
           font-size: 0.85em;
         }
       `}</style>
-
-      {/* Font Awesome for the icons used in the cart animation */}
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
@@ -620,8 +597,6 @@ const ProductPage = () => {
           {notification}
         </div>
       )}
-
-      {/* Login Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[200]">
           <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm w-full">
@@ -662,15 +637,11 @@ const ProductPage = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-            {/* Sidebar */}
             <aside className="hidden lg:block lg:col-span-1 bg-[#ffffff] p-6 rounded-lg shadow-sm h-fit">
               <FilterPanel />
             </aside>
-
-            {/* Product Grid */}
             <div className="lg:col-span-3">
               <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
-                {/* Search */}
                 <div className="flex-1 w-full relative">
                   <input
                     type="text"
@@ -681,8 +652,6 @@ const ProductPage = () => {
                   />
                   <Search className="absolute right-3 top-2.5 w-5 h-5 text-[#000000]" />
                 </div>
-
-                {/* Mobile Filters */}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className="w-full md:w-auto px-6 py-2 bg-orange-100 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-200 flex items-center justify-center gap-2 lg:hidden"
@@ -704,8 +673,7 @@ const ProductPage = () => {
 
               {paginatedProducts.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-                    {/* ✅ Uses ProductCard component */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-8 mx-15">
                     {paginatedProducts.map((p) => (
                       <ProductCard
                         key={p.id}
@@ -717,12 +685,10 @@ const ProductPage = () => {
                       />
                     ))}
                   </div>
-
-                  {/* Pagination */}
                   <div className="flex justify-center items-center space-x-4">
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      className="flex items-center px-4 py-2 text-orange-700 rounded-lg disabled:opacity-50"
+                      className="flex items-center px-4 py-2 text-[#57ba40] rounded-lg disabled:opacity-50"
                       disabled={currentPage === 1}
                     >
                       <ChevronLeft className="w-4 h-4 mr-1" />
@@ -734,7 +700,7 @@ const ProductPage = () => {
                       onClick={() =>
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
-                      className="flex items-center px-4 py-2 text-orange-700 rounded-lg disabled:opacity-50"
+                      className="flex items-center px-4 py-2 text-[#57ba40] rounded-lg disabled:opacity-50"
                       disabled={currentPage >= totalPages || totalPages === 0}
                     >
                       <ChevronRight className="w-4 h-4 ml-1" />

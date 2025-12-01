@@ -3,7 +3,14 @@ import { collection, addDoc, Timestamp, doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
-import { Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import {
+  Instagram,
+  Facebook,
+  Twitter,
+  Youtube,
+  Mail,
+  Phone,
+} from "lucide-react";
 
 const ContactPage = () => {
   const { user, isLoggedIn } = useAuth(); // ✅ updated
@@ -181,7 +188,7 @@ const ContactPage = () => {
               <p className="text-[#000000]">
                 <strong>Address:</strong>{" "}
                 {siteConfig?.footerInfo?.address ||
-                 " 29th Cross Rd, Kondappa Layout, C.V. Raman Nagar,Balaji Layout, Kaggadasapura,Bengaluru, Karnataka 560093"}
+                  " 29th Cross Rd, Kondappa Layout, C.V. Raman Nagar,Balaji Layout, Kaggadasapura,Bengaluru, Karnataka 560093"}
               </p>
               <p className="text-[#000000] mt-2">
                 <strong>Email:</strong>{" "}
@@ -198,28 +205,42 @@ const ContactPage = () => {
               </h3>
               <div className="flex space-x-4">
                 <a
-                  href={siteConfig?.footerInfo?.socials?.instagram || "#"}
+                  href="https://www.instagram.com/yumasfreshfoods?igsh=MW5raHFuNndqYWU1MA=="
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#57ba40] hover:text-pink-600"
                 >
                   <Instagram size={24} />
                 </a>
-                <a
+                {/* <a
                   href={siteConfig?.footerInfo?.socials?.facebook || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#57ba40] hover:text-blue-600"
                 >
                   <Facebook size={24} />
-                </a>
+                </a> */}
                 <a
-                  href={siteConfig?.footerInfo?.socials?.youtube || "#"}
+                  href="https://www.youtube.com/@yumasfreshfoods"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#57ba40] hover:text-red-600"
                 >
                   <Youtube size={24} />
+                </a>
+                <a
+                  href="mailto:yumasfreshfoods@gmail.com"
+                  className="text-[#57ba40] hover:text-purple-600"
+                >
+                  <Mail size={24} />
+                </a>
+
+                {/* Phone */}
+                <a
+                  href="tel:+919876543210"
+                  className="text-[#57ba40] hover:text-blue-600"
+                >
+                  <Phone size={24} />
                 </a>
                 {/* <a
                   href={siteConfig?.footerInfo?.socials?.twitter || "#"}
@@ -234,7 +255,6 @@ const ContactPage = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };

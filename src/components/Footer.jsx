@@ -1,6 +1,14 @@
 import logo from '../assets/logo.png';
 import { Link } from "react-router-dom";
-import { MapPin, Mail, Instagram, Facebook, Youtube, Linkedin, Twitter } from "lucide-react";
+import {
+  Instagram,
+  Facebook,
+  Twitter,
+  Youtube,
+  Mail,
+  Phone,
+  MapPin
+} from "lucide-react";
 import React from 'react';
 
 const Footer = () => (
@@ -67,11 +75,44 @@ const Footer = () => (
         <div>
           <h4 className="font-bold text-lg mb-4 text-white">Follow us on</h4>
           <div className="flex justify-center md:justify-start space-x-4 mb-6">
-            <Instagram className="w-6 h-6 hover:text-gray-100" />
-            <Facebook className="w-6 h-6 hover:text-gray-100" />
-            <Youtube className="w-6 h-6 hover:text-gray-100" />
-            <Linkedin className="w-6 h-6 hover:text-gray-100" />
-            <Twitter className="w-6 h-6 hover:text-gray-100" />
+           <a
+                             href="https://www.instagram.com/yumasfreshfoods?igsh=MW5raHFuNndqYWU1MA=="
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-[#ffffff] hover:text-pink-600"
+                           >
+                             <Instagram size={24} />
+                           </a>
+                           {/* <a
+                             href={siteConfig?.footerInfo?.socials?.facebook || "#"}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-[#57ba40] hover:text-blue-600"
+                           >
+                             <Facebook size={24} />
+                           </a> */}
+                           <a
+                             href="https://www.youtube.com/@yumasfreshfoods"
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-[#ffffff] hover:text-red-600"
+                           >
+                             <Youtube size={24} />
+                           </a>
+                           <a
+                             href="mailto:yumasfreshfoods@gmail.com"
+                             className="text-[#ffffff] hover:text-purple-600"
+                           >
+                             <Mail size={24} />
+                           </a>
+           
+                           {/* Phone */}
+                           <a
+                             href="tel:+919876543210"
+                             className="text-[#ffffff] hover:text-blue-600"
+                           >
+                             <Phone size={24} />
+                           </a>
           </div>
 
           <h4 className="font-bold text-lg mb-2 text-white">My Account</h4>

@@ -235,7 +235,7 @@ const PopularProducts = ({ products, categories }) => {
           color: #57ba40;
           transform: translate(-50%,-50%);
         }
-        .cart-button span.add-to-cart { opacity: 1; }
+        .cart-button span.add-to-cart { opacity: 1;font-size: 16px; white-space: nowrap; }
         .cart-button span.added { opacity: 0; }
         .cart-button.clicked .fa-shopping-cart { animation: cart 1.5s ease-in-out forwards; }
         .cart-button.clicked .fa-box { animation: box 1.5s ease-in-out forwards; }
@@ -322,18 +322,18 @@ const PopularProducts = ({ products, categories }) => {
                 </button>
             </div>
         ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mx-22">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mx-50">
           {filteredProducts.slice(0, 8).map((p) => {
             const price = getProductPrice(p);
             const discountPercentage = getDiscountPercentage(p);
             const isWishlisted = wishlist.includes(p.id);
-            const buttonRef = useRef(null);
+            const buttonRef = React.createRef();
             const isInStock = p.inStock;
 
             return (
               <div
                 key={p.id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative w-full max-w-[300px] mx-auto group"
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition relative w-full max-w-[250px] mx-auto group py-3  "
               >
                 <button
                   onClick={() => handleWishlistToggle(p)}
@@ -349,13 +349,13 @@ const PopularProducts = ({ products, categories }) => {
                 </button>
 
                 {/* Badge Container */}
-                <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+                <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
                   
                     <>
                     {p.inStock && (
     <div className="bg-[#57ba40] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
                         <Truck size={12} className="text-teal-100" />
-                        <span>Free Shipping</span>
+                        <span className="text-[13px]">Free Shipping</span>
                       </div>
 )}
 
@@ -394,7 +394,7 @@ const PopularProducts = ({ products, categories }) => {
                   </div>
                 </Link>
 
-                <div className="flex justify-center space-x-2 p-4 pt-0">
+                <div className="flex justify-center space-x-2 p-1 pt-0">
                   <button
                     ref={buttonRef}
                     onClick={() => handleAddToCart(p, buttonRef)}
@@ -403,20 +403,21 @@ const PopularProducts = ({ products, categories }) => {
                   >
                     {isInStock ? (
                       <>
-                        <span className="add-to-cart">Add to cart</span>
+                        <span className="add-to-cart text-[30px]" >Add to cart</span>
                         <span className="added">Added</span>
                         <i className="fas fa-shopping-cart"></i>
                         <i className="fas fa-box"></i>
                       </>
                     ) : (
-                      <span className="out-of-stock">Out of Stock</span>
+                     <span className="out-of-stock whitespace-nowrap">Out of Stock</span>
+
                     )}
                   </button>
 
                  {isInStock && (
   <button
     onClick={() => handleBuyNow(p)}
-    className="text-white px-4 py-2 rounded-lg bg-[#57ba40] 
+    className="text-white px-2 py-1 rounded-lg bg-[#57ba40] 
                hover:bg-[#f0fdf4] hover:border-2 hover:border-[#57ba40]
                hover:text-[#57ba40] transition"
   >
