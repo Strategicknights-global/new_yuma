@@ -59,7 +59,7 @@ const Navbar = () => {
   };
 
   // ✅ Navbar styling
-  let navbarClasses = "w-full transition-all duration-300 z-40";
+  let navbarClasses = "w-full transition-all duration-300 z-[999]";
   let navPositionStyles = {};
   let textColor = "text-gray-700";
   let iconColor = "text-gray-700";
@@ -251,7 +251,26 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-white z-50 md:hidden overflow-y-auto p-6">
+        <div className="fixed inset-0 bg-white z-[2000] md:hidden overflow-y-auto p-6">
+            <button
+      onClick={() => setIsMobileMenuOpen(false)}
+      className="absolute top-6 right-6 text-gray-800 z-[3000]"
+    >
+      <svg
+        className="w-7 h-7"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+
           <form onSubmit={handleSearch} className="flex px-6 mb-4 pt-20">
             <input
               type="text"
@@ -286,7 +305,7 @@ const Navbar = () => {
               className="py-2 text-gray-800 hover:text-red-600 border-b border-gray-200"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              ❤️ Wishlist
+              Wishlist
             </Link>
 
             {/* User Logged In */}
@@ -297,7 +316,7 @@ const Navbar = () => {
                   className="py-2 text-gray-800 hover:text-red-600 border-b border-gray-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  👤 Profile
+                 Profile
                 </Link>
 
                 <Link
@@ -305,7 +324,7 @@ const Navbar = () => {
                   className="py-2 text-gray-800 hover:text-red-600 border-b border-gray-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  📦 My Orders
+                   My Orders
                 </Link>
 
                 <button
@@ -313,7 +332,7 @@ const Navbar = () => {
                   disabled={isLoggingOut}
                   className="py-2 text-left text-red-600 hover:text-red-700 border-b border-gray-200 disabled:opacity-50"
                 >
-                  {isLoggingOut ? "Logging out..." : "🚪 Logout"}
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </button>
               </>
             ) : (
@@ -322,7 +341,7 @@ const Navbar = () => {
                 className="py-2 text-red-600 font-semibold border-b border-gray-200"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                🔑 Sign In
+                Sign In
               </Link>
             )}
           </div>

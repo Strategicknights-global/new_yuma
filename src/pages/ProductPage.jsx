@@ -61,7 +61,7 @@ const ProductCard = ({
     selectedVariant?.price ??
     getProductPrice(product);
   const discountPercentage = getDiscountPercentage(product);
-  const isInStock = product.inStock !== false; // Default to true if undefined
+  const isInStock = product.inStock !== false;
 
   let originalPrice = null;
   if (selectedVariant) {
@@ -72,12 +72,9 @@ const ProductCard = ({
     originalPrice = product.originalPrice;
   }
 
-
   return (
     <>
-      {/* PRODUCT CARD */}
       <div className="max-w-[250px] w-full">
-        {/* Image Box */}
         <div className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
           <img
             src={product.images?.[0]}
@@ -86,15 +83,7 @@ const ProductCard = ({
             className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
           />
 
-          {/* ========== BADGES (TOP LEFT) ========== */}
           <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
-            {isInStock && (
-              <div className="bg-[#57ba40] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-                <Truck size={12} className="text-teal-100" />
-                <span className="text-[13px]">Free Shipping</span>
-              </div>
-            )}
-
             {discountPercentage > 0 && (
               <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1 w-fit">
                 <Tag size={12} className="text-orange-100" />
@@ -103,7 +92,6 @@ const ProductCard = ({
             )}
           </div>
 
-          {/* ========== WISHLIST HEART BUTTON (TOP RIGHT) ========== */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -120,7 +108,6 @@ const ProductCard = ({
             />
           </button>
 
-          {/* ========== OUT OF STOCK OVERLAY ========== */}
           {!isInStock && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[5]">
               <div className="bg-black/90 text-white px-6 py-3 rounded-lg font-bold text-sm shadow-xl">
@@ -129,7 +116,6 @@ const ProductCard = ({
             </div>
           )}
 
-          {/* Hover CTA */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -147,13 +133,11 @@ const ProductCard = ({
             Choose Options
           </button>
 
-          {/* ===================== OVERLAY ON IMAGE ===================== */}
           {showOverlay && (
             <div
               className="absolute inset-0 bg-white z-50 flex flex-col p-4 overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* CLOSE BUTTON */}
               <button
                 onClick={() => setShowOverlay(false)}
                 className="absolute top-2 right-2 bg-gray-100 p-2 rounded-full hover:bg-gray-200 z-10"
@@ -161,12 +145,10 @@ const ProductCard = ({
                 ✕
               </button>
 
-              {/* PRODUCT NAME */}
               <h2 className="text-lg font-semibold text-gray-800 mb-2 pr-8">
                 {product.name}
               </h2>
 
-              {/* PRICE */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base font-bold text-red-600">
                   ₹{price}
@@ -178,7 +160,6 @@ const ProductCard = ({
                 )}
               </div>
 
-              {/* WEIGHTS - Only show if variants exist */}
               {product.variants && product.variants.length > 0 && (
                 <>
                   <p className="mb-2 text-sm font-medium text-gray-600">
@@ -208,7 +189,6 @@ const ProductCard = ({
                 </>
               )}
 
-              {/* ADD TO CART */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -221,7 +201,6 @@ const ProductCard = ({
                 {isInStock ? "Add to Cart" : "Out of Stock"}
               </button>
 
-              {/* VIEW DETAILS */}
               <p
                 onClick={(e) => {
                   e.stopPropagation();
@@ -235,7 +214,6 @@ const ProductCard = ({
           )}
         </div>
 
-        {/* TEXT BELOW */}
         <div
           onClick={() => navigate(`/products/${product.id}`)}
           className="pt-3 text-center cursor-pointer"
@@ -254,11 +232,21 @@ const ProductCard = ({
               </span>
             )}
           </div>
+            <p
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/products/${product.id}`);
+                }}
+                className="text-center text-sm text-gray-700 underline cursor-pointer"
+              >
+                View full details
+              </p>
         </div>
       </div>
     </>
   );
 };
+
 const ProductPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -277,13 +265,17 @@ const ProductPage = () => {
   const [priceRange, setPriceRange] = useState(5000);
   const [sortOption, setSortOption] = useState("top-sales");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
+  // Load wishlist from localStorage for guests or Firebase for logged-in users
   useEffect(() => {
     if (!user) {
-      setWishlist([]);
+      // Guest user - load from localStorage
+      const guestWishlist = JSON.parse(localStorage.getItem('guestWishlist') || '[]');
+      setWishlist(guestWishlist);
       return;
     }
+    
+    // Logged-in user - load from Firebase
     const userRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -319,29 +311,27 @@ const ProductPage = () => {
     };
     fetchData();
   }, []);
-useEffect(() => {
-  const params = new URLSearchParams(location.search);
 
-  // NEW → Get customCategory
-  const customCategory = params.get("customCategory");
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const customCategory = params.get("customCategory");
 
-  if (customCategory) {
-    setActiveCategories([customCategory]);
-  }
+    if (customCategory) {
+      setActiveCategories([customCategory]);
+    }
 
-  // existing code…
-  const categoryName = params.get("category");
-  const category = categories.find((c) => c.name === categoryName);
+    const categoryName = params.get("category");
+    const category = categories.find((c) => c.name === categoryName);
 
-  setSearchTerm(params.get("search") || "");
-  setActiveCategories(
-    customCategory
-      ? [customCategory]   // override
-      : category
-      ? [category.id]
-      : params.get("categories")?.split(",").filter(Boolean) || []
-  );
-}, [location.search, categories]);
+    setSearchTerm(params.get("search") || "");
+    setActiveCategories(
+      customCategory
+        ? [customCategory]
+        : category
+        ? [category.id]
+        : params.get("categories")?.split(",").filter(Boolean) || []
+    );
+  }, [location.search, categories]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -386,39 +376,38 @@ useEffect(() => {
     categories,
   ]);
 
-const filteredProducts = useMemo(() => {
-  return products
-    .filter((p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter((p) => {
-      if (activeCategories.length === 0) return true;
-      const textCategory = activeCategories[0];
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter((p) => {
+        if (activeCategories.length === 0) return true;
+        const textCategory = activeCategories[0];
 
-      return (
-        p.categoryName === textCategory ||               // main category
-        p.customCategory === textCategory ||             // single custom category
-        p.customCategories?.includes(textCategory) ||    // array of custom categories
-        p.tags?.includes(textCategory)                   // optional tags
-      );
-    })
-    .filter((p) => getProductPrice(p) <= priceRange)
-    .sort((a, b) => {
-      switch (sortOption) {
-        case "top-sales":
-          return (b.salesCount || 0) - (a.salesCount || 0);
-        case "price-asc":
-          return getProductPrice(a) - getProductPrice(b);
-        case "price-desc":
-          return getProductPrice(b) - getProductPrice(a);
-        case "name-asc":
-          return a.name.localeCompare(b.name);
-        default:
-          return 0;
-      }
-    });
-}, [products, searchTerm, activeCategories, priceRange, sortOption]);
-
+        return (
+          p.categoryName === textCategory ||
+          p.customCategory === textCategory ||
+          p.customCategories?.includes(textCategory) ||
+          p.tags?.includes(textCategory)
+        );
+      })
+      .filter((p) => getProductPrice(p) <= priceRange)
+      .sort((a, b) => {
+        switch (sortOption) {
+          case "top-sales":
+            return (b.salesCount || 0) - (a.salesCount || 0);
+          case "price-asc":
+            return getProductPrice(a) - getProductPrice(b);
+          case "price-desc":
+            return getProductPrice(b) - getProductPrice(a);
+          case "name-asc":
+            return a.name.localeCompare(b.name);
+          default:
+            return 0;
+        }
+      });
+  }, [products, searchTerm, activeCategories, priceRange, sortOption]);
 
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
@@ -431,11 +420,30 @@ const filteredProducts = useMemo(() => {
     setTimeout(() => setNotification(""), 3000);
   };
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
   const handleWishlistToggle = async (product) => {
     if (!isLoggedIn) {
-      setShowLoginModal(true);
+      // Guest user - use localStorage
+      const guestWishlist = JSON.parse(localStorage.getItem('guestWishlist') || '[]');
+      
+      if (guestWishlist.includes(product.id)) {
+        const updated = guestWishlist.filter(id => id !== product.id);
+        localStorage.setItem('guestWishlist', JSON.stringify(updated));
+        setWishlist(updated);
+        showNotification(`${product.name} removed from wishlist`);
+      } else {
+        const updated = [...guestWishlist, product.id];
+        localStorage.setItem('guestWishlist', JSON.stringify(updated));
+        setWishlist(updated);
+        showNotification(`${product.name} added to wishlist`);
+      }
       return;
     }
+
+    // Logged-in user - use Firebase
     try {
       const userRef = doc(db, "users", user.uid);
       if (wishlist.includes(product.id)) {
@@ -478,10 +486,6 @@ const filteredProducts = useMemo(() => {
   const handleBuyNow = (product) => {
     if (!product.inStock) {
       showNotification(`${product.name} is currently out of stock`);
-      return;
-    }
-    if (!isLoggedIn) {
-      setShowLoginModal(true);
       return;
     }
 
@@ -597,155 +601,10 @@ const filteredProducts = useMemo(() => {
   return (
     <div className="min-h-screen bg-[#ffffff] flex flex-col relative">
       <Navbar />
-      <style>{`
-        .cart-button {
-          position: relative;
-          padding: 10px;
-          flex: 1;
-          height: 44px;
-          border: 2px solid #57ba40;
-          border-radius: 10px;
-          background-color: #ffffff;
-          outline: none;
-          cursor: pointer;
-          color: #57ba40;
-          transition: .3s ease-in-out;
-          overflow: hidden;
-          font-size: 14px;
-        }
-        .cart-button:hover:not(.disabled-out-of-stock) {
-          background-color: #f0fdf4;
-        }
-        .cart-button:active {
-          transform: scale(.9);
-        }
-        .cart-button .fa-shopping-cart {
-          position: absolute;
-          z-index: 2;
-          top: 50%;
-          left: -10%;
-          font-size: 1.2em;
-          transform: translate(-50%,-50%);
-          color: #57ba40;
-        }
-        .cart-button .fa-box {
-          position: absolute;
-          z-index: 3;
-          top: -20%;
-          left: 52%;
-          font-size: 0.9em;
-          transform: translate(-50%,-50%);
-          color: #57ba40;
-        }
-        .cart-button span {
-          position: absolute;
-          z-index: 3;
-          left: 50%;
-          top: 50%;
-          font-size: 0.9em;
-          color: #57ba40;
-          transform: translate(-50%,-50%);
-          white-space: nowrap;
-        }
-        .cart-button span.add-to-cart{ opacity: 1;font-size: 16px; white-space: nowrap; }
-        .cart-button span.added { opacity: 0; }
-
-        .cart-button.clicked .fa-shopping-cart {
-          animation: cart 1.5s ease-in-out forwards;
-        }
-        .cart-button.clicked .fa-box {
-          animation: box 1.5s ease-in-out forwards;
-        }
-        .cart-button.clicked span.add-to-cart {
-          animation: txt1 1.5s ease-in-out forwards;
-        }
-        .cart-button.clicked span.added {
-          animation: txt2 1.5s ease-in-out forwards;
-        }
-
-        @keyframes cart {
-          0% { left: -10%; }
-          40%, 60% { left: 50%; }
-          100% { left: 110%; }
-        }
-        @keyframes box {
-          0%, 40% { top: -20%; }
-          60% { top: 40%; left: 52%; }
-          100% { top: 40%; left: 112%; }
-        }
-        @keyframes txt1 {
-          0% { opacity: 1; }
-          20%, 100% { opacity: 0; }
-        }
-        @keyframes txt2 {
-          0%, 80% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-
-        .product-image {
-          transition: transform 0.4s ease, box-shadow 0.4s ease;
-        }
-        .product-image:hover {
-          transform: scale(1.05);
-          box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-        }
-        
-        .cart-button.disabled-out-of-stock {
-          border: 2px solid #ff0000 !important;
-          background-color: #ffe5e5 !important;
-          cursor: not-allowed !important;
-          pointer-events: none !important;
-        }
-
-        .cart-button.disabled-out-of-stock span,
-        .cart-button.disabled-out-of-stock i {
-          color: #ff0000 !important;
-          opacity: 1 !important;
-        }
-
-        .cart-button.disabled-out-of-stock.clicked .fa-shopping-cart,
-        .cart-button.disabled-out-of-stock.clicked .fa-box,
-        .cart-button.disabled-out-of-stock.clicked span.add-to-cart,
-        .cart-button.disabled-out-of-stock.clicked span.added {
-          animation: none !important;
-        }
-        .cart-button span.out-of-stock {
-          white-space: nowrap !important;
-          font-size: 0.85em;
-        }
-      `}</style>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-      />
 
       {notification && (
         <div className="fixed top-20 right-4 z-[100] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
           {notification}
-        </div>
-      )}
-      {showLoginModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[200]">
-          <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm w-full">
-            <h2 className="text-xl font-semibold text-[#000000] mb-4">
-              You are not logged in
-            </h2>
-            <p className="text-[#000000] mb-6">Please login to continue</p>
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => setShowLoginModal(false)}
-                className="px-4 py-2 rounded-lg bg-gray-300 text-gray-800 hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => navigate("/login")}
-                className="px-4 py-2 rounded-lg bg-[#57ba40] text-white hover:bg-[#222222]"
-              >
-                Login
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -781,7 +640,7 @@ const filteredProducts = useMemo(() => {
                 </div>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="w-full md:w-auto px-6 py-2 bg-orange-100 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-200 flex items-center justify-center gap-2 lg:hidden"
+                  className="w-full md:w-auto px-6 py-2 bg-[#ffffff] border border-[#57ba40] text-[#57ba40] rounded-lg hover:bg-[#57ba40] hover:text-[#ffffff] flex items-center justify-center gap-2 lg:hidden"
                 >
                   <Filter className="w-4 h-4" /> Filters{" "}
                   {activeCategories.length > 0 && (

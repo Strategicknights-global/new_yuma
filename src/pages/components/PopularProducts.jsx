@@ -51,12 +51,6 @@ function ProductCard({ product, categories, wishlist, onToggleWishlist, onAddToC
         />
 
         <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
-          {isInStock && (
-            <div className="bg-[#57ba40] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-              <Truck size={12} />
-              <span>Free Shipping</span>
-            </div>
-          )}
           {discountPercentage > 0 && (
             <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
               <Tag size={12} />
@@ -156,6 +150,7 @@ function ProductCard({ product, categories, wishlist, onToggleWishlist, onAddToC
           <span className="text-lg font-bold text-[#b85a00]">₹{price}</span>
           {selectedVariant?.discountPrice && <span className="text-sm line-through text-gray-400">₹{product.variants?.[0]?.price ?? product.originalPrice}</span>}
         </div>
+          <p onClick={() => { navigate(`/products/${product.id}`); }} className="text-center text-sm text-gray-700 underline cursor-pointer">View full details</p>
       </div>
     </div>
   );

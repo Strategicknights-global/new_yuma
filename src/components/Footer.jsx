@@ -12,8 +12,8 @@ import {
 import React from "react";
 
 const Footer = () => (
-  <footer className="bg-[#1a1a1a] text-gray-300 py-10">
-    <div className="container mx-auto px-4 flex flex-col md:flex-row items-center md:items-start justify-between">
+  <footer className="bg-[#1a1a1a] text-gray-300 py-10 ">
+    <div className="container mx-auto px-4 flex flex-col md:flex-row items-center md:items-start justify-between md:mx-20">
       <div className="mb-8 md:mb-0 text-center md:text-left">
         <img
           src={logo}
@@ -31,9 +31,9 @@ const Footer = () => (
           </div>
         </div>
 
-        <div className="flex items-center justify-start md:justify-start mb-2">
+        <div className="flex items-center justify-start md:justify-start mb-2 ">
           <Mail className="w-4 h-4 mr-2" />
-          <p className="text-sm">yumasfreshfood@gmail.com</p>
+          <p className="text-sm">yumascustomercare@gmail.com</p>
         </div>
 
         <button className="bg-[#57ba40] text-white px-4 py-2 mt-4 rounded-lg flex items-center justify-center hover:bg-orange-600 transition-colors">
@@ -47,7 +47,7 @@ const Footer = () => (
         </button>
       </div>
 
-      <div className="flex-1 flex flex-wrap md:flex-nowrap justify-between text-left md:text-left gap-6">
+      <div className="flex-1 flex flex-wrap md:flex-nowrap justify-between text-left md:text-left gap-6 md:mx-30">
 
         <div className="mb-6 md:mb-0">
           <h4 className="font-bold text-lg mb-4 text-white">Quick Links</h4>
@@ -58,23 +58,15 @@ const Footer = () => (
               </Link>
             </li>
             <li>
-              <Link to="/home" className="hover:underline">
+              <Link to="/" className="hover:underline">
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/testimonials" className="hover:underline">
-                Testimonials
-              </Link>
             </li>
             <li>
               <Link to="/products" className="hover:underline">
                 Products
-              </Link>
-            </li>
-            <li>
-              <Link to="/delivery" className="hover:underline">
-                FAQs
               </Link>
             </li>
           </ul>
@@ -134,7 +126,7 @@ const Footer = () => (
               <Youtube size={24} />
             </a>
             <a
-              href="mailto:yumasfreshfoods@gmail.com"
+              href="mailto:yumascustomercare@gmail.com"
               className="text-[#ffffff] hover:text-purple-600"
             >
               <Mail size={24} />

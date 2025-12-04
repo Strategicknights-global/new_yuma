@@ -192,7 +192,7 @@ const ContactPage = () => {
               </p>
               <p className="text-[#000000] mt-2">
                 <strong>Email:</strong>{" "}
-                {siteConfig?.footerInfo?.email || "yumasfreshfood@gmail.com"}
+                {siteConfig?.footerInfo?.email || "yumascustomercare@gmail.com"}
               </p>
               <p className="text-[#000000] mt-2">
                 <strong>Phone:</strong>{" "}

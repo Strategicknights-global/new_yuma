@@ -5,7 +5,7 @@ const offers = [
   {
     text: (
       <>
-      <span style={{ color: '#ffffff' }}>⚡</span> <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">20% OFF</span> <span className="font-['poppins'] font-bold text-[#000000] ">Your First Order! Use Code</span><span style={{color:"#ffffff",fontStyle:"bold",marginLeft:"4px"}}>FIRST20</span>
+      <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">20% OFF</span> <span className="font-['poppins'] font-bold text-[#000000] ">Your First Order! Use Code</span><span style={{color:"#ffffff",fontStyle:"bold",marginLeft:"4px"}}>FIRST20</span>
       </>
     ),
     link: "/products?offer=FIRST20",
@@ -13,7 +13,7 @@ const offers = [
   {
     text: (
       <>
-        🚚 <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">FREE SHIPPING</span> <span className="text-black">on Orders Over</span><span className="text-white"> ₹500! </span>🎉
+        <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">FREE SHIPPING</span> <span className="text-black">on Orders Over</span><span className="text-white"> ₹500! </span>
       </>
     ),
     link: "/products?offer=FREESHIP",
@@ -21,7 +21,7 @@ const offers = [
   {
     text: (
       <>
-        ⏰ <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">Limited Time Offer!</span> Shop Now! ⭐
+       <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">Limited Time Offer!</span> Shop Now! 
       </>
     ),
     link: "/products?offer=LIMITEDTIME",
@@ -40,7 +40,7 @@ const OfferBanner = () => {
 
   return (
     <>
-      <div className="w-full bg-[#57ba40] overflow-hidden fixed top-0 left-0 z-50 border-b border-green-200 h-14">
+      <div className="w-full bg-[#57ba40] overflow-hidden fixed top-0 left-0 z-100 border-b border-green-200 h-14">
         <div
           key={currentIndex}
           className="marquee-item text-[#3D2817] font-['Poppins']  font-semibold text-lg"

@@ -19,7 +19,7 @@ import Orders from './pages/Orders';
 import Wishlist from './pages/Wishlist.jsx';
 import BulkEnquiry from './pages/BulkEnquiry.jsx';  //
 
-
+import ScrollToTop from './pages/ScrollToTop.jsx';
 // Import common components
 import OfferBanner from './components/OfferBanner';
 import Footer from './components/Footer.jsx';
@@ -61,7 +61,9 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
+       
         <Router>
+           <ScrollToTop />
           <div className="flex flex-col min-h-screen">
             <OfferBanner /> 
             <main className="flex-grow">
