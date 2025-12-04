@@ -1,4 +1,4 @@
-import logo from '../assets/logo.png';
+import logo from "../assets/logo.png";
 import { Link } from "react-router-dom";
 import {
   Instagram,
@@ -7,14 +7,13 @@ import {
   Youtube,
   Mail,
   Phone,
-  MapPin
+  MapPin,
 } from "lucide-react";
-import React from 'react';
+import React from "react";
 
 const Footer = () => (
   <footer className="bg-[#1a1a1a] text-gray-300 py-10">
     <div className="container mx-auto px-4 flex flex-col md:flex-row items-center md:items-start justify-between">
-      
       <div className="mb-8 md:mb-0 text-center md:text-left">
         <img
           src={logo}
@@ -27,12 +26,12 @@ const Footer = () => (
           <div className="text-sm text-left">
             <p>29th Cross Rd, Kondappa Layout, C.V. Raman Nagar,</p>
             <p> Balaji Layout, Kaggadasapura, </p>
-              <p> Bengaluru, Karnataka 560093</p>
-              <br></br>
+            <p> Bengaluru, Karnataka 560093</p>
+            <br></br>
           </div>
         </div>
 
-        <div className="flex items-center justify-center md:justify-start mb-2">
+        <div className="flex items-center justify-start md:justify-start mb-2">
           <Mail className="w-4 h-4 mr-2" />
           <p className="text-sm">yumasfreshfood@gmail.com</p>
         </div>
@@ -48,42 +47,77 @@ const Footer = () => (
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row justify-around text-center md:text-left">
+      <div className="flex-1 flex flex-wrap md:flex-nowrap justify-between text-left md:text-left gap-6">
+
         <div className="mb-6 md:mb-0">
           <h4 className="font-bold text-lg mb-4 text-white">Quick Links</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/about" className="hover:underline">Why Yuma's Fresh Foods?</Link></li>
-            <li><Link to="/home" className="hover:underline">Home</Link></li>
-            <li><Link to="/testimonials" className="hover:underline">Testimonials</Link></li>
-            <li><Link to="/products" className="hover:underline">Products</Link></li>
-            <li><Link to="/delivery" className="hover:underline">FAQs</Link></li>
-            
+            <li>
+              <Link to="/about" className="hover:underline">
+                Why Yuma's Fresh Foods?
+              </Link>
+            </li>
+            <li>
+              <Link to="/home" className="hover:underline">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/testimonials" className="hover:underline">
+                Testimonials
+              </Link>
+            </li>
+            <li>
+              <Link to="/products" className="hover:underline">
+                Products
+              </Link>
+            </li>
+            <li>
+              <Link to="/delivery" className="hover:underline">
+                FAQs
+              </Link>
+            </li>
           </ul>
         </div>
 
         <div className="mb-6 md:mb-0">
           <h4 className="font-bold text-lg mb-4 text-white">Our Policy</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/policies" className="hover:underline">Policies</Link></li>
-            <li><Link to="/policies" className="hover:underline">Terms and Conditions</Link></li>
-            <li><Link to="/delivery" className="hover:underline">Delivery Information</Link></li>
-            <li><Link to="/contact" className="hover:underline">Contact us</Link></li>
-           
+            <li>
+              <Link to="/policies" className="hover:underline">
+                Policies
+              </Link>
+            </li>
+            <li>
+              <Link to="/policies" className="hover:underline">
+                Terms and Conditions
+              </Link>
+            </li>
+            <li>
+              <Link to="/delivery" className="hover:underline">
+                Delivery Information
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:underline">
+                Contact us
+              </Link>
+            </li>
           </ul>
         </div>
 
         <div>
           <h4 className="font-bold text-lg mb-4 text-white">Follow us on</h4>
           <div className="flex justify-center md:justify-start space-x-4 mb-6">
-           <a
-                             href="https://www.instagram.com/yumasfreshfoods?igsh=MW5raHFuNndqYWU1MA=="
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             className="text-[#ffffff] hover:text-pink-600"
-                           >
-                             <Instagram size={24} />
-                           </a>
-                           {/* <a
+            <a
+              href="https://www.instagram.com/yumasfreshfoods?igsh=MW5raHFuNndqYWU1MA=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#ffffff] hover:text-pink-600"
+            >
+              <Instagram size={24} />
+            </a>
+            {/* <a
                              href={siteConfig?.footerInfo?.socials?.facebook || "#"}
                              target="_blank"
                              rel="noopener noreferrer"
@@ -91,34 +125,42 @@ const Footer = () => (
                            >
                              <Facebook size={24} />
                            </a> */}
-                           <a
-                             href="https://www.youtube.com/@yumasfreshfoods"
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             className="text-[#ffffff] hover:text-red-600"
-                           >
-                             <Youtube size={24} />
-                           </a>
-                           <a
-                             href="mailto:yumasfreshfoods@gmail.com"
-                             className="text-[#ffffff] hover:text-purple-600"
-                           >
-                             <Mail size={24} />
-                           </a>
-           
-                           {/* Phone */}
-                           <a
-                             href="tel:+919876543210"
-                             className="text-[#ffffff] hover:text-blue-600"
-                           >
-                             <Phone size={24} />
-                           </a>
+            <a
+              href="https://www.youtube.com/@yumasfreshfoods"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#ffffff] hover:text-red-600"
+            >
+              <Youtube size={24} />
+            </a>
+            <a
+              href="mailto:yumasfreshfoods@gmail.com"
+              className="text-[#ffffff] hover:text-purple-600"
+            >
+              <Mail size={24} />
+            </a>
+
+            {/* Phone */}
+            <a
+              href="tel:+919876543210"
+              className="text-[#ffffff] hover:text-blue-600"
+            >
+              <Phone size={24} />
+            </a>
           </div>
 
           <h4 className="font-bold text-lg mb-2 text-white">My Account</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/profile" className="hover:underline">My Profile</Link></li>
-            <li><Link to="/orders" className="hover:underline">Order History</Link></li>
+            <li>
+              <Link to="/profile" className="hover:underline">
+                My Profile
+              </Link>
+            </li>
+            <li>
+              <Link to="/orders" className="hover:underline">
+                Order History
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
@@ -130,8 +172,8 @@ const Footer = () => (
       <div className="border-t border-gray-700 w-3/4 mx-auto"></div>
 
       <p className="mt-1 pt-6 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} 
-        <span className="text-red-500 font-semibold"> Yuma's Fresh Foods</span>. 
+        © {new Date().getFullYear()}
+        <span className="text-red-500 font-semibold"> Yuma's Fresh Foods</span>.
         All rights reserved.
       </p>
     </div>

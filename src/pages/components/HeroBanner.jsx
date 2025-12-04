@@ -9,7 +9,8 @@ import img0 from "../../assets/image0.png";
 import img1 from "../../assets/image1.png";
 import img2 from "../../assets/image2.png";
 /* {import video2 from "../../assets/video2.mp4";} */
-
+import imagemob1 from "../../assets/imagemob1.png";
+import imagemob2 from "../../assets/imagemob2.png";
 const HeroBanner = () => {
   const swiperRef = useRef(null);
   const videoRef = useRef(null);
@@ -81,11 +82,21 @@ const HeroBanner = () => {
 `}
 </style>
 
-        {/* Image slides */}
+
          <SwiperSlide>
+            <img
+   src={imagemob1}
+    alt="Mobile Banner"
+    className="block md:hidden w-full"
+  />
           <img src={img0} alt="Banner 0" className="w-full h-full object-cover" />
         </SwiperSlide>
         <SwiperSlide>
+            <img
+    src={imagemob2}
+    alt="Mobile Banner"
+    className="block md:hidden w-full"
+  />
           <img src={img1} alt="Banner 1" className="w-full h-full object-cover" />
         </SwiperSlide>
         <SwiperSlide>
