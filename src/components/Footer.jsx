@@ -33,7 +33,7 @@ const Footer = () => (
 
         <div className="flex items-center justify-start md:justify-start mb-2 ">
           <Mail className="w-4 h-4 mr-2" />
-          <p className="text-sm">yumascustomercare@gmail.com</p>
+          <p className="text-sm">yumas.customercare@gmail.com</p>
         </div>
 
         <button className="bg-[#57ba40] text-white px-4 py-2 mt-4 rounded-lg flex items-center justify-center hover:bg-orange-600 transition-colors">
@@ -126,7 +126,7 @@ const Footer = () => (
               <Youtube size={24} />
             </a>
             <a
-              href="mailto:yumascustomercare@gmail.com"
+              href="mailto:yumas.customercare@gmail.com"
               className="text-[#ffffff] hover:text-purple-600"
             >
               <Mail size={24} />

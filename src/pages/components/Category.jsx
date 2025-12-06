@@ -282,22 +282,24 @@ function ProductCard({ product, wishlist, onToggleWishlist, onAddToCart, onClick
   return (
     <div className="min-w-[250px] w-[250px] flex-shrink-0">
       <div className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+        {/* Lazy Loaded Image */}
         <img
           src={product.images?.[0] || "https://via.placeholder.com/150"}
           alt={product.name}
           onClick={onClick}
+          loading="lazy" // <--- lazy loading here
           className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
         />
 
         {/* Discount Badge */}
-        <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
-          {discountPercentage > 0 && (
+        {discountPercentage > 0 && (
+          <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
             <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
               <Tag size={12} />
               <span>{Math.round(discountPercentage)}% OFF</span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Wishlist Button */}
         <button
@@ -333,7 +335,7 @@ function ProductCard({ product, wishlist, onToggleWishlist, onAddToCart, onClick
           Choose Options
         </button>
 
-        {/* Overlay for variant selection */}
+        {/* Overlay */}
         {showOverlay && (
           <div
             className="absolute inset-0 bg-white z-[50] flex flex-col p-4 overflow-y-auto"

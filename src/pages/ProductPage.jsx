@@ -80,6 +80,7 @@ const ProductCard = ({
             src={product.images?.[0]}
             alt={product.name}
             onClick={() => navigate(`/products/${product.id}`)}
+            loading="lazy"
             className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
           />
 
@@ -232,15 +233,15 @@ const ProductCard = ({
               </span>
             )}
           </div>
-            <p
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/products/${product.id}`);
-                }}
-                className="text-center text-sm text-gray-700 underline cursor-pointer"
-              >
-                View full details
-              </p>
+          <p
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/products/${product.id}`);
+            }}
+            className="text-center text-sm text-gray-700 underline cursor-pointer"
+          >
+            View full details
+          </p>
         </div>
       </div>
     </>
@@ -270,11 +271,13 @@ const ProductPage = () => {
   useEffect(() => {
     if (!user) {
       // Guest user - load from localStorage
-      const guestWishlist = JSON.parse(localStorage.getItem('guestWishlist') || '[]');
+      const guestWishlist = JSON.parse(
+        localStorage.getItem("guestWishlist") || "[]"
+      );
       setWishlist(guestWishlist);
       return;
     }
-    
+
     // Logged-in user - load from Firebase
     const userRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
@@ -378,9 +381,7 @@ const ProductPage = () => {
 
   const filteredProducts = useMemo(() => {
     return products
-      .filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
       .filter((p) => {
         if (activeCategories.length === 0) return true;
         const textCategory = activeCategories[0];
@@ -427,16 +428,18 @@ const ProductPage = () => {
   const handleWishlistToggle = async (product) => {
     if (!isLoggedIn) {
       // Guest user - use localStorage
-      const guestWishlist = JSON.parse(localStorage.getItem('guestWishlist') || '[]');
-      
+      const guestWishlist = JSON.parse(
+        localStorage.getItem("guestWishlist") || "[]"
+      );
+
       if (guestWishlist.includes(product.id)) {
-        const updated = guestWishlist.filter(id => id !== product.id);
-        localStorage.setItem('guestWishlist', JSON.stringify(updated));
+        const updated = guestWishlist.filter((id) => id !== product.id);
+        localStorage.setItem("guestWishlist", JSON.stringify(updated));
         setWishlist(updated);
         showNotification(`${product.name} removed from wishlist`);
       } else {
         const updated = [...guestWishlist, product.id];
-        localStorage.setItem('guestWishlist', JSON.stringify(updated));
+        localStorage.setItem("guestWishlist", JSON.stringify(updated));
         setWishlist(updated);
         showNotification(`${product.name} added to wishlist`);
       }

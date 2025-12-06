@@ -62,7 +62,7 @@ const SocialMedia = () => {
      <button
   onClick={() =>
     window.open(
-      "https://www.instagram.com/strategic_knights?igsh=dzR6dGRlcjc3N3Q%3D",
+      "https://www.instagram.com/yumasfreshfoods?igsh=MW5raHFuNndqYWU1MA==",
       "_blank"
     )
   }

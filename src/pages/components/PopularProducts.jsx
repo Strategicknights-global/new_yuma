@@ -1,5 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  lazy,
+  Suspense
+} from "react";
+
 import { useNavigate, useSearchParams } from "react-router-dom";
+
+
 import {
   doc,
   collection,
@@ -31,132 +40,133 @@ const getDiscountPercentage = (product) => {
 
 /* ----------------------- ProductCard ------------------------ */
 /* ProductCard is a separate component so hooks can be used inside safely */
-function ProductCard({ product, categories, wishlist, onToggleWishlist, onAddToCart, navigate, showNotification }) {
-  const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0] || null);
-  const [showOverlay, setShowOverlay] = useState(false);
-  const buttonRef = useRef(null);
+// function ProductCard({ product, categories, wishlist, onToggleWishlist, onAddToCart, navigate, showNotification }) {
+//   const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0] || null);
+//   const [showOverlay, setShowOverlay] = useState(false);
+//   const buttonRef = useRef(null);
 
-  const price = selectedVariant?.discountPrice ?? selectedVariant?.price ?? getProductPrice(product);
-  const discountPercentage = getDiscountPercentage(product);
-  const isInStock = product.inStock !== false;
+//   const price = selectedVariant?.discountPrice ?? selectedVariant?.price ?? getProductPrice(product);
+//   const discountPercentage = getDiscountPercentage(product);
+//   const isInStock = product.inStock !== false;
 
-  return (
-    <div className="max-w-[250px] w-full mx-auto">
-      <div className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-        <img
-          src={product.images?.[0]}
-          alt={product.name}
-          onClick={() => navigate(`/products/${product.id}`)}
-          className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
-        />
+//   return (
+//     <div className="max-w-[250px] w-full mx-auto">
+//       <div className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+//         <img
+//           src={product.images?.[0]}
+//           alt={product.name}
+//           onClick={() => navigate(`/products/${product.id}`)}
+//           className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
+//         />
 
-        <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
-          {discountPercentage > 0 && (
-            <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-              <Tag size={12} />
-              <span>{Math.round(discountPercentage)}% OFF</span>
-            </div>
-          )}
-        </div>
+//         <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
+//           {discountPercentage > 0 && (
+//             <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
+//               <Tag size={12} />
+//               <span>{Math.round(discountPercentage)}% OFF</span>
+//             </div>
+//           )}
+//         </div>
 
-        <button
-          onClick={(e) => onToggleWishlist(product, e)}
-          className="absolute top-2 right-2 bg-white/90 p-2 rounded-full hover:bg-white hover:scale-110 transition duration-300 shadow-md"
-        >
-          <Heart
-            className={`w-5 h-5 transition-all duration-200 ${
-              wishlist.includes(product.id)
-                ? "fill-red-500 text-red-500"
-                : "text-gray-600 hover:text-red-500"
-            }`}
-          />
-        </button>
+//         <button
+//           onClick={(e) => onToggleWishlist(product, e)}
+//           className="absolute top-2 right-2 bg-white/90 p-2 rounded-full hover:bg-white hover:scale-110 transition duration-300 shadow-md"
+//         >
+//           <Heart
+//             className={`w-5 h-5 transition-all duration-200 ${
+//               wishlist.includes(product.id)
+//                 ? "fill-red-500 text-red-500"
+//                 : "text-gray-600 hover:text-red-500"
+//             }`}
+//           />
+//         </button>
 
-        {!isInStock && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
-            <div className="bg-black/90 text-white px-6 py-3 rounded-lg text-sm font-bold">
-              OUT OF STOCK
-            </div>
-          </div>
-        )}
+//         {!isInStock && (
+//           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+//             <div className="bg-black/90 text-white px-6 py-3 rounded-lg text-sm font-bold">
+//               OUT OF STOCK
+//             </div>
+//           </div>
+//         )}
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowOverlay(true);
-          }}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black text-white font-semibold px-5 py-2 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 duration-300 whitespace-nowrap"
-        >
-          Choose Options
-        </button>
+//         <button
+//           onClick={(e) => {
+//             e.stopPropagation();
+//             setShowOverlay(true);
+//           }}
+//           className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black text-white font-semibold px-5 py-2 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 duration-300 whitespace-nowrap"
+//         >
+//           Choose Options
+//         </button>
 
-        {showOverlay && (
-          <div
-            className="absolute inset-0 bg-white z-[50] flex flex-col p-4 overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowOverlay(false)}
-              className="absolute top-2 right-2 bg-gray-100 p-2 rounded-full hover:bg-gray-200"
-            >
-              ✕
-            </button>
+//         {showOverlay && (
+//           <div
+//             className="absolute inset-0 bg-white z-[50] flex flex-col p-4 overflow-y-auto"
+//             onClick={(e) => e.stopPropagation()}
+//           >
+//             <button
+//               onClick={() => setShowOverlay(false)}
+//               className="absolute top-2 right-2 bg-gray-100 p-2 rounded-full hover:bg-gray-200"
+//             >
+//               ✕
+//             </button>
 
-            <h2 className="text-lg font-semibold pr-10">{product.name}</h2>
+//             <h2 className="text-lg font-semibold pr-10">{product.name}</h2>
 
-            <div className="flex items-center gap-2 my-3">
-              <span className="text-red-600 font-bold text-lg">₹{price}</span>
-              {selectedVariant?.discountPrice && (
-                <span className="text-sm line-through text-gray-400">₹{product.variants?.[0]?.price ?? product.originalPrice}</span>
-              )}
-            </div>
+//             <div className="flex items-center gap-2 my-3">
+//               <span className="text-red-600 font-bold text-lg">₹{price}</span>
+//               {selectedVariant?.discountPrice && (
+//                 <span className="text-sm line-through text-gray-400">₹{product.variants?.[0]?.price ?? product.originalPrice}</span>
+//               )}
+//             </div>
 
-            {product.variants?.length > 0 && (
-              <>
-                <p className="text-sm text-gray-600 mb-2">Choose weight:</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {product.variants.map((v, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedVariant(v)}
-                      className={`px-3 py-1.5 text-sm rounded-lg border ${
-                        selectedVariant === v ? "bg-black text-white" : "bg-white text-gray-700 border-gray-300"
-                      }`}
-                    >
-                      {v.weight || v.size || `Variant ${index + 1}`}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+//             {product.variants?.length > 0 && (
+//               <>
+//                 <p className="text-sm text-gray-600 mb-2">Choose weight:</p>
+//                 <div className="flex flex-wrap gap-2 mb-4">
+//                   {product.variants.map((v, index) => (
+//                     <button
+//                       key={index}
+//                       onClick={() => setSelectedVariant(v)}
+//                       className={`px-3 py-1.5 text-sm rounded-lg border ${
+//                         selectedVariant === v ? "bg-black text-white" : "bg-white text-gray-700 border-gray-300"
+//                       }`}
+//                     >
+//                       {v.weight || v.size || `Variant ${index + 1}`}
+//                     </button>
+//                   ))}
+//                 </div>
+//               </>
+//             )}
 
-            <button
-              ref={buttonRef}
-              onClick={() => onAddToCart({ ...product, selectedVariant }, buttonRef, () => setShowOverlay(false))}
-              disabled={!isInStock}
-              className="w-full bg-black text-white py-2.5 rounded-lg font-semibold mb-3 transition-transform duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {isInStock ? "Add to Cart" : "Out of Stock"}
-            </button>
+//             <button
+//               ref={buttonRef}
+//               onClick={() => onAddToCart({ ...product, selectedVariant }, buttonRef, () => setShowOverlay(false))}
+//               disabled={!isInStock}
+//               className="w-full bg-black text-white py-2.5 rounded-lg font-semibold mb-3 transition-transform duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
+//             >
+//               {isInStock ? "Add to Cart" : "Out of Stock"}
+//             </button>
 
-            <p onClick={() => { navigate(`/products/${product.id}`); }} className="text-center text-sm text-gray-700 underline cursor-pointer">View full details</p>
-          </div>
-        )}
-      </div>
+//             <p onClick={() => { navigate(`/products/${product.id}`); }} className="text-center text-sm text-gray-700 underline cursor-pointer">View full details</p>
+//           </div>
+//         )}
+//       </div>
 
-      <div onClick={() => navigate(`/products/${product.id}`)} className="pt-3 text-center cursor-pointer">
-        <h3 className="text-sm font-semibold line-clamp-1 text-gray-800">{product.name}</h3>
-        <div className="flex justify-center items-center gap-2 mt-1">
-          <span className="text-lg font-bold text-[#b85a00]">₹{price}</span>
-          {selectedVariant?.discountPrice && <span className="text-sm line-through text-gray-400">₹{product.variants?.[0]?.price ?? product.originalPrice}</span>}
-        </div>
-          <p onClick={() => { navigate(`/products/${product.id}`); }} className="text-center text-sm text-gray-700 underline cursor-pointer">View full details</p>
-      </div>
-    </div>
-  );
-}
+//       <div onClick={() => navigate(`/products/${product.id}`)} className="pt-3 text-center cursor-pointer">
+//         <h3 className="text-sm font-semibold line-clamp-1 text-gray-800">{product.name}</h3>
+//         <div className="flex justify-center items-center gap-2 mt-1">
+//           <span className="text-lg font-bold text-[#b85a00]">₹{price}</span>
+//           {selectedVariant?.discountPrice && <span className="text-sm line-through text-gray-400">₹{product.variants?.[0]?.price ?? product.originalPrice}</span>}
+//         </div>
+//           <p onClick={() => { navigate(`/products/${product.id}`); }} className="text-center text-sm text-gray-700 underline cursor-pointer">View full details</p>
+//       </div>
+//     </div>
+//   );
+// }
 
 /* -------------------- PopularProducts main -------------------- */
+const ProductCard = lazy(() => import("./ProductCard"));
 const PopularProducts = ({ products = [], categories = [] }) => {
   // states
   const [activeCategory, setActiveCategory] = useState("All");
@@ -335,6 +345,7 @@ const handleWishlistToggle = (product, e) => {
             <button onClick={() => { setActiveGoal(null); setActiveCategory("All"); }} className="mt-4 text-[#57ba40] font-bold hover:underline">Clear all filters</button>
           </div>
         ) : (
+           <Suspense fallback={<div>Loading products...</div>}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:mx-50">
             {filteredProducts.slice(0, 8).map(prod => (
               <ProductCard
@@ -349,6 +360,7 @@ const handleWishlistToggle = (product, e) => {
               />
             ))}
           </div>
+           </Suspense>
         )}
       </div>
     </section>

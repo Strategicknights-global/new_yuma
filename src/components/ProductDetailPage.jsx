@@ -25,6 +25,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { Heart, CheckCircle, XCircle, Star } from 'lucide-react';
+
 const StarRating = ({ rating, size = 'w-5 h-5' }) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 !== 0;
@@ -67,6 +68,7 @@ const ProductDetailPage = () => {
   const [wordCount, setWordCount] = useState(0);
   const MAX_WORDS = 200;
   const buttonRef = useRef(null);
+
   useEffect(() => {
     if (!id) return;
 
@@ -96,6 +98,7 @@ const ProductDetailPage = () => {
 
     fetchProduct();
   }, [id]);
+
   useEffect(() => {
     if (!product || !id) return;
 
@@ -134,6 +137,7 @@ const ProductDetailPage = () => {
 
     fetchRelatedProducts();
   }, [product, id]);
+
   useEffect(() => {
     if (!id) return;
 
@@ -150,6 +154,7 @@ const ProductDetailPage = () => {
 
     return () => unsubscribe();
   }, [id]);
+
   useEffect(() => {
     if (!user) return setWishlist([]);
     const userRef = doc(db, 'users', user.uid);
@@ -158,18 +163,22 @@ const ProductDetailPage = () => {
     });
     return () => unsubscribe();
   }, [user]);
+
   useEffect(() => {
     if (isLoggedIn && user) setNewReviewName(user.displayName || '');
   }, [user, isLoggedIn]);
+
   const averageRating = useMemo(() => {
     if (reviews.length === 0) return 0;
     const total = reviews.reduce((acc, r) => acc + r.rating, 0);
     return (total / reviews.length).toFixed(1);
   }, [reviews]);
+
   const showNotification = (msg) => {
     setNotification(msg);
     setTimeout(() => setNotification(''), 3000);
   };
+
   const handleAddToCart = () => {
     if (!isLoggedIn) return setShowLoginModal(true);
     if (!product?.inStock) return showNotification('This product is out of stock.');
@@ -199,6 +208,7 @@ const ProductDetailPage = () => {
       showNotification('Failed to update wishlist.');
     }
   };
+
   const handleCommentChange = (e) => {
     const text = e.target.value;
     const currentWords = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
@@ -241,8 +251,8 @@ const ProductDetailPage = () => {
   const incrementQuantity = () => setQuantity((q) => q + 1);
   const decrementQuantity = () => { if (quantity > 1) setQuantity((q) => q - 1); };
 
-  if (loading) return <><Navbar /><div className="min-h-screen flex items-center justify-center text-xl font-semibold">Loading Product...</div></>;
-  if (error) return <><Navbar /><div className="min-h-screen flex items-center justify-center text-red-500">{error}</div></>;
+  if (loading) return <><Navbar /><div className="min-h-screen flex items-center justify-center text-lg sm:text-xl font-semibold px-4">Loading Product...</div></>;
+  if (error) return <><Navbar /><div className="min-h-screen flex items-center justify-center text-red-500 px-4 text-center">{error}</div></>;
   if (!product) return null;
 
   const displayPrice = selectedVariant?.discountPrice ?? selectedVariant?.price ?? product.price;
@@ -252,13 +262,35 @@ const ProductDetailPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {notification && (
-        <div className="fixed top-20 right-4 z-[100] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
+        <div className="fixed top-20 right-4 z-[100] bg-green-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-lg animate-pulse text-sm sm:text-base max-w-[90vw]">
           {notification}
         </div>
       )}
 
       <style>{`
-        .cart-button { position: relative; padding: 10px; width: 160px; height: 48px; border: 1px solid #57ba40; border-radius: 10px; background-color:#ffffff ; outline: none; cursor: pointer; color: #fff; transition: .3s ease-in-out; overflow: hidden; font-size: 15px; font-weight: 600; }
+        .cart-button { 
+          position: relative; 
+          padding: 10px; 
+          width: 100%; 
+          max-width: 160px; 
+          height: 48px; 
+          border: 1px solid #57ba40; 
+          border-radius: 10px; 
+          background-color:#ffffff; 
+          outline: none; 
+          cursor: pointer; 
+          color: #fff; 
+          transition: .3s ease-in-out; 
+          overflow: hidden; 
+          font-size: 14px; 
+          font-weight: 600; 
+        }
+        @media (max-width: 640px) {
+          .cart-button {
+            font-size: 13px;
+            height: 44px;
+          }
+        }
         .cart-button:hover { background-color: #57ba40; color: #ffffff}
         .cart-button:active { transform: scale(.9); }
         .cart-button .fa-shopping-cart { position: absolute; z-index: 2; top: 50%; left: -10%; font-size: 1.4em; transform: translate(-50%,-50%); color: #fff; }
@@ -275,101 +307,279 @@ const ProductDetailPage = () => {
         @keyframes txt1 { 0%{opacity:1;} 20%,100%{opacity:0;} }
         @keyframes txt2 { 0%,80%{opacity:0;} 100%{opacity:1;} }
         .cart-button:hover span {
-  color: #ffffff !important;
-}
-
+          color: #ffffff !important;
+        }
       `}</style>
       
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 flex-grow">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="flex flex-row gap-4 h-[500px]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 flex-grow">
+        {/* Product Images and Details Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Image Section */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 h-auto sm:h-[400px] lg:h-[500px]">
             {product.images && product.images.length > 1 && (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0">
                 {product.images.slice(0, 4).map((img, index) => (
-                  <button key={`${img}-${index}`} onClick={() => setSelectedImageIndex(index)} className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${selectedImageIndex === index ? 'border-red-500' : 'border-transparent hover:border-gray-400'}`}>
+                  <button 
+                    key={`${img}-${index}`} 
+                    onClick={() => setSelectedImageIndex(index)} 
+                    className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${selectedImageIndex === index ? 'border-red-500' : 'border-transparent hover:border-gray-400'}`}
+                  >
                     <img src={img} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover"/>
                   </button>
                 ))}
               </div>
             )}
-            <div className="flex-grow">{product.images && product.images[selectedImageIndex] && (<img src={product.images[selectedImageIndex]} alt={product.name} className="w-full h-full object-cover rounded-lg shadow-lg"/>)}</div>
+            <div className="flex-grow h-[350px] sm:h-auto">
+              {product.images && product.images[selectedImageIndex] && (
+                <img 
+                  src={product.images[selectedImageIndex]} 
+                  alt={product.name} 
+                  className="w-full h-full object-contain sm:object-cover rounded-lg shadow-lg"
+                />
+              )}
+            </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg h-[500px] overflow-y-auto">
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{product.name}</h1>
-            <div className="flex items-center gap-2 mb-4">
-              <StarRating rating={averageRating} />
-              <span className="text-gray-600 font-medium">{averageRating} out of 5 ({reviews.length} ratings)</span>
+
+          {/* Product Details Section */}
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg h-auto lg:h-[500px] lg:overflow-y-auto">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">{product.name}</h1>
+            
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <StarRating rating={averageRating} size="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-sm sm:text-base text-gray-600 font-medium">{averageRating} out of 5 ({reviews.length} ratings)</span>
             </div>
+
             <div className="flex items-baseline gap-2 mb-6">
-              <span className="text-4xl font-bold text-red-600">₹{displayPrice}</span>
-              {originalPrice && displayPrice < originalPrice && (<span className="text-2xl text-gray-500 line-through">₹{originalPrice}</span>)}
+              <span className="text-3xl sm:text-4xl font-bold text-red-600">₹{displayPrice}</span>
+              {originalPrice && displayPrice < originalPrice && (
+                <span className="text-xl sm:text-2xl text-gray-500 line-through">₹{originalPrice}</span>
+              )}
             </div>
+
             {product.variants?.length > 0 && (
               <div className="mb-6">
-                <h3 className="font-semibold text-gray-800 mb-2">Select Size:</h3>
-                <div className="flex flex-wrap gap-2">{product.variants.map((variant) => (<button key={variant.size} onClick={() => setSelectedVariant(variant)} className={`px-4 py-2 border rounded-lg ${selectedVariant?.size === variant.size ? 'bg-red-600 text-white border-red-600' : 'hover:bg-gray-100'}`}>{variant.size}</button>))}</div>
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">Select Size:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants.map((variant) => (
+                    <button 
+                      key={variant.size} 
+                      onClick={() => setSelectedVariant(variant)} 
+                      className={`px-3 sm:px-4 py-2 border rounded-lg text-sm sm:text-base ${selectedVariant?.size === variant.size ? 'bg-red-600 text-white border-red-600' : 'hover:bg-gray-100'}`}
+                    >
+                      {variant.size}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-            <div className="mb-6 flex items-center gap-2">{stockStatus === "out" ? (<><XCircle className="w-5 h-5 text-red-600" /><span className="font-semibold text-red-600">Out of Stock</span></>) : (<><CheckCircle className="w-5 h-5 text-green-600" /><span className="font-semibold text-green-600">In Stock</span></>)}</div>
-            <div className="flex items-center gap-4">
+
+            <div className="mb-6 flex items-center gap-2">
+              {stockStatus === "out" ? (
+                <>
+                  <XCircle className="w-5 h-5 text-red-600" />
+                  <span className="font-semibold text-red-600 text-sm sm:text-base">Out of Stock</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="font-semibold text-green-600 text-sm sm:text-base">In Stock</span>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <div className="flex items-center border border-gray-300 rounded-md">
-                <button onClick={decrementQuantity} className="p-3 text-gray-500 hover:text-gray-800">-</button>
-                <span className="px-4 text-md font-medium text-gray-800">{quantity}</span>
-                <button onClick={incrementQuantity} className="p-3 text-gray-500 hover:text-gray-800">+</button>
+                <button onClick={decrementQuantity} className="p-2 sm:p-3 text-gray-500 hover:text-gray-800">-</button>
+                <span className="px-3 sm:px-4 text-sm sm:text-md font-medium text-gray-800">{quantity}</span>
+                <button onClick={incrementQuantity} className="p-2 sm:p-3 text-gray-500 hover:text-gray-800">+</button>
               </div>
-              <button ref={buttonRef} onClick={handleAddToCart} disabled={stockStatus !== "in"} className="cart-button disabled:opacity-50 disabled:cursor-not-allowed"><span className="add-to-cart">Add to Cart</span><span className="added">Added</span><i className="fas fa-shopping-cart"></i><i className="fas fa-box"></i></button>
-              <button onClick={handleWishlistToggle} className="p-3 bg-gray-200 rounded-lg hover:bg-gray-300"><Heart className={`w-6 h-6 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}/></button>
+              
+              <button 
+                ref={buttonRef} 
+                onClick={handleAddToCart} 
+                disabled={stockStatus !== "in"} 
+                className="cart-button disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              >
+                <span className="add-to-cart">Add to Cart</span>
+                <span className="added">Added</span>
+                <i className="fas fa-shopping-cart"></i>
+                <i className="fas fa-box"></i>
+              </button>
+              
+              <button 
+                onClick={handleWishlistToggle} 
+                className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 flex-shrink-0"
+              >
+                <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}/>
+              </button>
             </div>
           </div>
         </div>
-        <div className="mt-12 space-y-8">
-            {product.description && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">Product Description</h2> <p className="text-gray-700 whitespace-pre-line">{product.description}</p> </div> )}
-            {product.benefits?.length > 0 && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">Benefits</h2> <ul className="list-disc list-inside text-gray-700 space-y-1"> {product.benefits.map((b, i) => ( <li key={i}>{b}</li> ))} </ul> </div> )}
-            {product.ingredientsBenefits?.length > 0 && ( <div className="bg-white p-6 rounded-lg shadow overflow-x-auto"> <h2 className="text-xl font-bold mb-2">Ingredients & Their Benefits</h2> <table className="w-full border border-gray-200"> <thead> <tr className="bg-gray-100 text-left"> <th className="p-2 border">Ingredient</th> <th className="p-2 border">Benefit</th> </tr> </thead> <tbody> {product.ingredientsBenefits.map((item, i) => ( <tr key={i} className="border-t"> <td className="p-2 border font-medium">{item.ingredient}</td> <td className="p-2 border">{item.benefit}</td> </tr> ))} </tbody> </table> </div> )}
-            {product.howToUse && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">How to Use</h2> <p className="text-gray-700 whitespace-pre-line">{product.howToUse}</p> </div> )}
-            {product.purityPackaging && ( <div className="bg-white p-6 rounded-lg shadow"> <h2 className="text-xl font-bold mb-2">Purity & Packaging</h2> <p className="text-gray-700 whitespace-pre-line">{product.purityPackaging}</p> </div> )}
+
+        {/* Product Information Sections */}
+        <div className="mt-8 sm:mt-12 space-y-6 sm:space-y-8">
+          {product.description && (
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h2 className="text-lg sm:text-xl font-bold mb-2">Product Description</h2>
+              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{product.description}</p>
+            </div>
+          )}
+
+          {product.benefits?.length > 0 && (
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h2 className="text-lg sm:text-xl font-bold mb-2">Benefits</h2>
+              <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm sm:text-base">
+                {product.benefits.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {product.ingredientsBenefits?.length > 0 && (
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow overflow-x-auto">
+              <h2 className="text-lg sm:text-xl font-bold mb-2">Ingredients & Their Benefits</h2>
+              <table className="w-full border border-gray-200 text-sm sm:text-base">
+                <thead>
+                  <tr className="bg-gray-100 text-left">
+                    <th className="p-2 border">Ingredient</th>
+                    <th className="p-2 border">Benefit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {product.ingredientsBenefits.map((item, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2 border font-medium">{item.ingredient}</td>
+                      <td className="p-2 border">{item.benefit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {product.howToUse && (
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h2 className="text-lg sm:text-xl font-bold mb-2">How to Use</h2>
+              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{product.howToUse}</p>
+            </div>
+          )}
+
+          {product.purityPackaging && (
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+              <h2 className="text-lg sm:text-xl font-bold mb-2">Purity & Packaging</h2>
+              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{product.purityPackaging}</p>
+            </div>
+          )}
         </div>
         
-        <div className="mt-12 bg-white p-8 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900">Customer Reviews</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="max-h-[500px] overflow-y-auto pr-4 space-y-6">{reviews.length > 0 ? (reviews.map(review => (<div key={review.id} className="border-b pb-4"><div className="flex items-center mb-2"><p className="font-bold text-gray-800 mr-4">{review.userName}</p><StarRating rating={review.rating} /></div><p className="text-gray-600">{review.comment}</p><p className="text-xs text-gray-400 mt-2">{review.createdAt ? new Date(review.createdAt.toDate()).toLocaleDateString() : 'Just now'}</p></div>))) : (<p className="text-gray-500">Be the first to review this product!</p>)}</div>
+        {/* Reviews Section */}
+        <div className="mt-8 sm:mt-12 bg-white p-4 sm:p-8 rounded-lg shadow">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">Customer Reviews</h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
+            {/* Reviews List */}
+            <div className="max-h-[400px] sm:max-h-[500px] overflow-y-auto pr-2 sm:pr-4 space-y-4 sm:space-y-6">
+              {reviews.length > 0 ? (
+                reviews.map(review => (
+                  <div key={review.id} className="border-b pb-4">
+                    <div className="flex items-center mb-2 flex-wrap gap-2">
+                      <p className="font-bold text-gray-800 text-sm sm:text-base">{review.userName}</p>
+                      <StarRating rating={review.rating} size="w-4 h-4" />
+                    </div>
+                    <p className="text-gray-600 text-sm sm:text-base">{review.comment}</p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {review.createdAt ? new Date(review.createdAt.toDate()).toLocaleDateString() : 'Just now'}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm sm:text-base">Be the first to review this product!</p>
+              )}
+            </div>
+
+            {/* Review Form */}
             <div>
               {isLoggedIn ? (
                 <form onSubmit={handleReviewSubmit} className="space-y-4">
-                  <h3 className="text-xl font-semibold text-gray-800">Write a Review</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Write a Review</h3>
+                  
                   <div>
-                    <label htmlFor="review-name" className="block text-gray-700 font-medium mb-2">Your Name</label>
-                    <input id="review-name" type="text" value={newReviewName} onChange={(e) => setNewReviewName(e.target.value)} placeholder="Enter your name" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"/>
+                    <label htmlFor="review-name" className="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Your Name</label>
+                    <input 
+                      id="review-name" 
+                      type="text" 
+                      value={newReviewName} 
+                      onChange={(e) => setNewReviewName(e.target.value)} 
+                      placeholder="Enter your name" 
+                      className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-sm sm:text-base"
+                    />
                   </div>
+
                   <div>
-                    <label className="block text-gray-700 font-medium mb-2">Your Rating</label>
-                    <div className="flex items-center" onMouseLeave={() => setHoverRating(0)}>{[1, 2, 3, 4, 5].map(star => (<Star key={star} className={`w-8 h-8 cursor-pointer transition-colors ${(hoverRating || newReviewRating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} onClick={() => setNewReviewRating(star)} onMouseEnter={() => setHoverRating(star)}/>))}</div>
+                    <label className="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Your Rating</label>
+                    <div className="flex items-center" onMouseLeave={() => setHoverRating(0)}>
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <Star 
+                          key={star} 
+                          className={`w-6 h-6 sm:w-8 sm:h-8 cursor-pointer transition-colors ${(hoverRating || newReviewRating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                          onClick={() => setNewReviewRating(star)} 
+                          onMouseEnter={() => setHoverRating(star)}
+                        />
+                      ))}
+                    </div>
                   </div>
+
                   <div>
-                    <label htmlFor="review-comment" className="block text-gray-700 font-medium mb-2">Your Review</label>
-                    <textarea id="review-comment" value={newReviewComment} onChange={handleCommentChange} rows="5" placeholder="Share your thoughts on the product..." className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"></textarea>
-                    <p className={`text-sm text-right mt-1 ${wordCount > MAX_WORDS ? 'text-red-500 font-bold' : 'text-gray-500'}`}>{wordCount} / {MAX_WORDS} words</p>
+                    <label htmlFor="review-comment" className="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Your Review</label>
+                    <textarea 
+                      id="review-comment" 
+                      value={newReviewComment} 
+                      onChange={handleCommentChange} 
+                      rows="5" 
+                      placeholder="Share your thoughts on the product..." 
+                      className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-sm sm:text-base"
+                    ></textarea>
+                    <p className={`text-xs sm:text-sm text-right mt-1 ${wordCount > MAX_WORDS ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                      {wordCount} / {MAX_WORDS} words
+                    </p>
                   </div>
-                  <button type="submit" disabled={reviewSubmitting || wordCount > MAX_WORDS} className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">{reviewSubmitting ? 'Submitting...' : 'Submit Review'}</button>
+
+                  <button 
+                    type="submit" 
+                    disabled={reviewSubmitting || wordCount > MAX_WORDS} 
+                    className="w-full bg-red-600 text-white font-bold py-2 sm:py-3 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base"
+                  >
+                    {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
+                  </button>
                 </form>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-8 rounded-lg"><p className="text-lg font-semibold text-gray-800">Want to share your thoughts?</p><p className="text-gray-600 mb-4 text-center">Please log in to write a review.</p><Link to="/login" className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors">Log In</Link></div>
+                <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-6 sm:p-8 rounded-lg">
+                  <p className="text-base sm:text-lg font-semibold text-gray-800">Want to share your thoughts?</p>
+                  <p className="text-sm sm:text-base text-gray-600 mb-4 text-center">Please log in to write a review.</p>
+                  <Link 
+                    to="/login" 
+                    className="bg-red-600 text-white font-bold py-2 px-4 sm:px-6 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+                  >
+                    Log In
+                  </Link>
+                </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* --- ✅ FIX: Recommended Products Section --- */}
+        {/* Recommended Products Section */}
         {recommendedProducts.length > 0 && (
-          <div className="mt-12">
-            {/* ✅ FIX 1: Centered the title */}
-            <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">You Might Also Like</h2>
-        <RecommendedProductsCarousel recommendedProducts={recommendedProducts} />
-
-
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 text-center">You Might Also Like</h2>
+            <RecommendedProductsCarousel 
+              recommendedProducts={recommendedProducts}
+              onToggleWishlist={handleWishlistToggle}
+              wishlist={wishlist}
+            />
           </div>
         )}
       </main>
