@@ -23,7 +23,7 @@ import {
   Tag,
 } from "lucide-react";
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE = 9;
 
 // --- HELPERS ---
 const getProductPrice = (product) => {
@@ -254,8 +254,10 @@ const ProductPage = () => {
   const { user, isLoggedIn } = useAuth();
   const { addToCart } = useCart();
 
+  // ✅ CHANGE 1: Added goals state
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [goals, setGoals] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -266,6 +268,7 @@ const ProductPage = () => {
   const [priceRange, setPriceRange] = useState(5000);
   const [sortOption, setSortOption] = useState("top-sales");
   const [currentPage, setCurrentPage] = useState(1);
+  const [goalFilter, setGoalFilter] = useState("");
 
   // Load wishlist from localStorage for guests or Firebase for logged-in users
   useEffect(() => {
@@ -290,6 +293,7 @@ const ProductPage = () => {
     return () => unsubscribe();
   }, [user]);
 
+  // ✅ CHANGE 2: Added goals fetch from shopGoals collection
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -302,6 +306,11 @@ const ProductPage = () => {
         const categoriesSnapshot = await getDocs(collection(db, "categories"));
         setCategories(
           categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        );
+
+        const goalsSnapshot = await getDocs(collection(db, "shopGoals"));
+        setGoals(
+          goalsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
         );
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -336,6 +345,7 @@ const ProductPage = () => {
     );
   }, [location.search, categories]);
 
+  // ✅ CHANGE 3: Added goalFilter to URL reading
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryName = params.get("category");
@@ -349,9 +359,11 @@ const ProductPage = () => {
     );
     setSortOption(params.get("sort") || "top-sales");
     setPriceRange(Number(params.get("price")) || 5000);
+    setGoalFilter(params.get("goal") || "");
     setCurrentPage(Number(params.get("page")) || 1);
   }, [location.search, categories]);
 
+  // ✅ CHANGE 4: Added goalFilter to URL writing with proper dependency
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("search", searchTerm);
@@ -365,6 +377,7 @@ const ProductPage = () => {
     }
     if (sortOption !== "top-sales") params.set("sort", sortOption);
     if (priceRange < 5000) params.set("price", priceRange);
+    if (goalFilter) params.set("goal", goalFilter);
     if (currentPage > 1) params.set("page", currentPage);
 
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
@@ -373,15 +386,26 @@ const ProductPage = () => {
     activeCategories,
     sortOption,
     priceRange,
+    goalFilter,
     currentPage,
     navigate,
     location.pathname,
     categories,
   ]);
 
+  // ✅ CHANGE 5: Updated filtering logic to match Categories.jsx
   const filteredProducts = useMemo(() => {
+    // Find the selected goal object from the goals collection
+    const selectedGoal = goals.find(g => 
+      g.name?.trim().toLowerCase() === goalFilter.trim().toLowerCase()
+    );
+    const selectedGoalId = selectedGoal?.id;
+
     return products
+      // search filter
       .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+      // category filter
       .filter((p) => {
         if (activeCategories.length === 0) return true;
         const textCategory = activeCategories[0];
@@ -393,7 +417,33 @@ const ProductPage = () => {
           p.tags?.includes(textCategory)
         );
       })
+
+      // price filter
       .filter((p) => getProductPrice(p) <= priceRange)
+
+      // goal filter - matching Categories.jsx logic
+      .filter((p) => {
+        if (!goalFilter) return true; // Show all products when no goal selected
+        
+        // Check if product's goalId matches the selected goal's ID
+        if (selectedGoalId && p.goalId === selectedGoalId) {
+          return true;
+        }
+        
+        // Check if product's goalName matches the selected goal name
+        if (p.goalName && String(p.goalName).trim().toLowerCase() === String(goalFilter).trim().toLowerCase()) {
+          return true;
+        }
+        
+        // Check if product's goalIds array includes the selected goal ID
+        if (selectedGoalId && p.goalIds?.includes(selectedGoalId)) {
+          return true;
+        }
+        
+        return false;
+      })
+
+      // sorting
       .sort((a, b) => {
         switch (sortOption) {
           case "top-sales":
@@ -408,7 +458,15 @@ const ProductPage = () => {
             return 0;
         }
       });
-  }, [products, searchTerm, activeCategories, priceRange, sortOption]);
+  }, [
+    products,
+    searchTerm,
+    activeCategories,
+    priceRange,
+    sortOption,
+    goalFilter,
+    goals,
+  ]);
 
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
@@ -519,6 +577,7 @@ const ProductPage = () => {
     setSortOption("top-sales");
     setPriceRange(5000);
     setSearchTerm("");
+    setGoalFilter(""); 
     setCurrentPage(1);
   };
 
@@ -558,6 +617,26 @@ const ProductPage = () => {
           <option value="name-asc">Name: A to Z</option>
         </select>
       </div>
+
+      {/* ✅ CHANGE 6: Updated dropdown with correct values and "All Products" as first option */}
+      <div>
+        <h3 className="font-semibold mb-3 text-lg text-[#000000]">
+          Shop as per Goal
+        </h3>
+        <select
+          value={goalFilter}
+          onChange={(e) => setGoalFilter(e.target.value)}
+          className="w-full p-2 border border-[#57ba40] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#000000] bg-white text-[#000000]"
+        >
+          <option value="">All Products</option>
+          <option value="Kids Friendly">Kids Friendly</option>
+          <option value="Women's Care">Women's Care</option>
+          <option value="Diabetes Friendly">Diabetes Friendly</option>
+          <option value="Zero Sugar">Zero Sugar</option>
+          <option value="Nutrient Rich">Nutrient Rich</option>
+        </select>
+      </div>
+
       <div>
         <h3 className="font-semibold mb-3 text-lg text-[#000000]">
           Price Range: 0 - ₹{priceRange}

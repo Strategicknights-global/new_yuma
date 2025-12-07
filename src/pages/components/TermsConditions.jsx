@@ -6,7 +6,7 @@ const TermsConditions = () => {
       <h1 className="text-3xl font-bold mb-4">Terms & Conditions</h1>
 
       <p className="mb-4">
-        Welcome to <b>Yumas Fresh Foods</b>. By using our website, you agree to the
+        Welcome to <b>Yuma's Fresh Foods</b>. By using our website, you agree to the
         terms and conditions mentioned below.
       </p>
 
@@ -30,7 +30,7 @@ const TermsConditions = () => {
 
       <h2 className="text-xl font-semibold mb-2">Limitation of Liability</h2>
       <p>
-        Yumas Fresh Foods is not responsible for delays caused by natural events,
+        Yuma's Fresh Foods is not responsible for delays caused by natural events,
         courier issues, or technical problems beyond our control.
       </p>
     </div>

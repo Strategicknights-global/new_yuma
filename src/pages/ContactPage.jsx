@@ -229,7 +229,7 @@ const ContactPage = () => {
                   <Youtube size={24} />
                 </a>
                 <a
-                  href="mailto:yumasfreshfoods@gmail.com"
+                  href="mailto:yumas.customercare@gmail.com"
                   className="text-[#57ba40] hover:text-purple-600"
                 >
                   <Mail size={24} />

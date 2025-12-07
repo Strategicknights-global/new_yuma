@@ -86,15 +86,21 @@ const Navbar = () => {
     <nav style={navPositionStyles} className={navbarClasses}>
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
-          <img src={logo} alt="Yuma Foods Logo" className="h-20 w-auto" />
-          <span
-            className={`text-3xl font-bold ${textColor}`}
-            style={{ fontFamily: "'Baloo 2', cursive" }}
-          >
-            Yuma Foods
-          </span>
-        </Link>
+       <Link to="/" className="flex items-center space-x-2">
+  <img
+    src={logo}
+    alt="Yuma Foods Logo"
+    className="h-12 w-12 sm:h-10 sm:w-10 lg:h-20 lg:w-20"
+  />
+
+  <span
+    className={`text-xl sm:text-2xl lg:text-3xl font-bold ${textColor}`}
+    style={{ fontFamily: "'Baloo 2', cursive" }}
+  >
+    Yuma's Fresh Foods
+  </span>
+</Link>
+
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center space-x-6">

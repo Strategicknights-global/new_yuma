@@ -13,14 +13,14 @@ export default function Policies() {
 
       <div className="max-w-4xl mx-auto px-6 py-10 font-sans">
         <h1 className="text-4xl font-bold text-center mb-10 text-[#c0392b]">
-          Yumas Fresh Foods – Policies
+          Yuma's Fresh Foods – Policies
         </h1>
 
         {/* ================= REFUND POLICY ================= */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold mb-4 text-gray-800">Refund Policy</h2>
           <p className={paraStyle}>
-            At <b>Yumas Fresh Foods</b>, your satisfaction is important to us. Due to the nature of
+            At <b>Yuma's Fresh Foods</b>, your satisfaction is important to us. Due to the nature of
             food products, refunds are handled with care and consideration.
           </p>
 

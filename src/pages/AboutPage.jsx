@@ -117,7 +117,7 @@ export default function AboutPage() {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#07602e] leading-tight drop-shadow-md">
-                Yuma's Foods — Freshness & Tradition
+                Yuma's Fresh Foods — Freshness & Tradition
               </h1>
 
               <p className="mt-6 text-lg md:text-xl text-[#07602e] max-w-xl leading-relaxed">

@@ -224,28 +224,31 @@ const PopularProducts = ({ products = [], categories = [] }) => {
     setNotification(msg);
     setTimeout(() => setNotification(""), 2500);
   };
-useEffect(() => {
-  const savedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-  setWishlist(savedWishlist);
-}, []);
-useEffect(() => {
-  localStorage.setItem("wishlist", JSON.stringify(wishlist));
-}, [wishlist]);
+// useEffect(() => {
+//   const savedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+//   setWishlist(savedWishlist);
+// }, []);
+// useEffect(() => {
+//   localStorage.setItem("wishlist", JSON.stringify(wishlist));
+// }, [wishlist]);
 
-const handleWishlistToggle = (product, e) => {
+const handleWishlistToggle = async (product, e) => {
   e?.stopPropagation();
 
-  let updated;
-
-  if (wishlist.includes(product.id)) {
-    updated = wishlist.filter(id => id !== product.id);
-    showNotification(`${product.name} removed from wishlist`);
-  } else {
-    updated = [...wishlist, product.id];
-    showNotification(`${product.name} added to wishlist`);
+  if (!user) {
+    showNotification("Login to save wishlist");
+    return;
   }
 
-  setWishlist(updated);
+  const userRef = doc(db, "users", user.uid);
+
+  if (wishlist.includes(product.id)) {
+    await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
+    showNotification(`${product.name} removed from wishlist`);
+  } else {
+    await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
+    showNotification(`${product.name} added to wishlist`);
+  }
 };
 
 
@@ -347,7 +350,7 @@ const handleWishlistToggle = (product, e) => {
         ) : (
            <Suspense fallback={<div>Loading products...</div>}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:mx-50">
-            {filteredProducts.slice(0, 8).map(prod => (
+            {filteredProducts.slice(0, 4).map(prod => (
               <ProductCard
                 key={prod.id}
                 product={prod}
@@ -358,8 +361,17 @@ const handleWishlistToggle = (product, e) => {
                 navigate={navigate}
                 showNotification={showNotification}
               />
+              
             ))}
           </div>
+            <div className="flex justify-center mt-6">
+    <button
+      onClick={() => navigate("/products")} 
+      className="px-6 py-2 bg-[#00a63e] text-white rounded-lg text-lg font-semibold hover:bg-green-700 transition"
+    >
+      Explore More
+    </button>
+  </div>
            </Suspense>
         )}
       </div>

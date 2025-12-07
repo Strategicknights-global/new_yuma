@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import {  ArrowLeft } from "lucide-react";
+import logo from "../assets/logo.png"
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -122,21 +124,28 @@ const AuthPage = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center bg-gray-100"
-      style={{
-        backgroundImage: `url(${signbackground})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+     <div 
+    className="min-h-screen flex items-center justify-center bg-gray-100 mt-20 "
+    style={{
+      backgroundImage: `url(${signbackground})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    }}
+  >
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md relative">
+ <button
+    onClick={() => navigate('/')}
+    className="absolute top-10 lg:top-10 left-4 flex items-center space-x-1 text-gray-700 hover:text-red-600"
+  >
+    <ArrowLeft className="w-6 h-6 lg:w-8 lg:h-8" />
+   
+  </button>
 
         <div className="text-center">
           <Link to="/">
             <img
-              src="/Yuma foods logo.png"
+              src={logo}
               alt="Logo"
               className="mx-auto w-40 h-40 rounded-full object-cover"
             />

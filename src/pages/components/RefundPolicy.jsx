@@ -6,7 +6,7 @@ const RefundPolicy = () => {
       <h1 className="text-3xl font-bold mb-4">Refund & Cancellation Policy</h1>
 
       <p className="mb-4">
-        At <b>Yumas Fresh Foods</b>, we take pride in delivering high-quality products.
+        At <b>Yuma's Fresh Foods</b>, we take pride in delivering high-quality products.
         Due to the perishable nature of our food items, we currently do not accept
         returns once the order is delivered.
       </p>

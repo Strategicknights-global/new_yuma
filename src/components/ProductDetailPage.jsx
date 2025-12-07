@@ -572,7 +572,9 @@ const ProductDetailPage = () => {
         </div>
 
         {/* Recommended Products Section */}
-        {recommendedProducts.length > 0 && (
+       
+      </main>
+       {recommendedProducts.length > 0 && (
           <div className="mt-8 sm:mt-12">
             <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 text-center">You Might Also Like</h2>
             <RecommendedProductsCarousel 
@@ -582,7 +584,6 @@ const ProductDetailPage = () => {
             />
           </div>
         )}
-      </main>
    
     </div>
   );

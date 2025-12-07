@@ -55,7 +55,6 @@ export default function Categories() {
     return () => unsubscribe();
   }, [user]);
 
-  // Load wishlist from localStorage for non-authenticated users
   useEffect(() => {
     const savedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
     setWishlist(savedWishlist);
@@ -195,13 +194,13 @@ export default function Categories() {
             {selectedCategory} Products
           </h2>
 
-          <div className="overflow-x-auto px-6 py-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+         <div className="overflow-x-auto px-6 py-4">
             <style jsx>{`
               div::-webkit-scrollbar {
                 display: none;
               }
             `}</style>
-            <div className="flex gap-6">
+           <div className="flex gap-6 justify-center w-max mx-auto">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -280,7 +279,7 @@ function ProductCard({ product, wishlist, onToggleWishlist, onAddToCart, onClick
   const isInStock = product.inStock !== false;
 
   return (
-    <div className="min-w-[250px] w-[250px] flex-shrink-0">
+    <div className="min-w-[250px] w-[250px] flex-shrink-0 gap-4 justify-center">
       <div className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
         {/* Lazy Loaded Image */}
         <img
