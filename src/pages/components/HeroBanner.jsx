@@ -31,7 +31,7 @@ const HeroBanner = () => {
   }, []);
 
   return (
-    <section className="relative w-full h-[70vh] sm:h-[80vh] md:h-[90vh] lg:h-[100vh] xl:h-[100vh] bg-black overflow-hidden">
+    <section className="relative w-full h-[660px] sm:h-[660px] md:h-[90vh] lg:h-[100vh] xl:h-[100vh] bg-black overflow-hidden">
       <Swiper
         modules={[Autoplay, Pagination, Navigation, EffectFade]}
         onSwiper={(swiper) => (swiperRef.current = swiper)}
@@ -41,7 +41,7 @@ const HeroBanner = () => {
         navigation
         effect="fade"
         speed={1000}
-        className="w-full h-full"
+        className="w-full h-[660px] md:h-full object-cover"
       >
         {/* Video slide */}
         {/* <SwiperSlide>
@@ -64,8 +64,8 @@ const HeroBanner = () => {
             }}
           />
         </SwiperSlide> */}
-<style>
-{`
+        <style>
+          {`
   .swiper-button-next,
   .swiper-button-prev {
     color: #57ba40 !important;
@@ -80,27 +80,38 @@ const HeroBanner = () => {
     background: #57ba40 !important;
   }
 `}
-</style>
+        </style>
 
-
-         <SwiperSlide>
-            <img
-   src={imagemob1}
-    alt="Mobile Banner"
-    className="block md:hidden w-full"
-  />
-          <img src={img0} alt="Banner 0" className="w-full h-full object-cover" />
+        <SwiperSlide>
+          <img
+            src={imagemob1}
+            alt="Mobile Banner"
+            className="block md:hidden w-full h-[660px]"
+          />
+          <img
+            src={img0}
+            alt="Banner 0"
+            className="w-full h-full object-cover"
+          />
         </SwiperSlide>
         <SwiperSlide>
-            <img
-    src={imagemob2}
-    alt="Mobile Banner"
-    className="block md:hidden w-full"
-  />
-          <img src={img1} alt="Banner 1" className="w-full h-full object-cover" />
+          <img
+            src={imagemob2}
+            alt="Mobile Banner"
+            className="block md:hidden w-full h-[660px]"
+          />
+          <img
+            src={img1}
+            alt="Banner 1"
+            className=" h-[660px] w-full lg:h-full object-cover"
+          />
         </SwiperSlide>
         <SwiperSlide>
-          <img src={img2} alt="Banner 2" className="w-full h-full object-cover" />
+          <img
+            src={img2}
+            alt="Banner 2"
+            className="w-[400px] h-[660px] lg:w-full lg:h-full object-cover"
+          />
         </SwiperSlide>
       </Swiper>
     </section>
