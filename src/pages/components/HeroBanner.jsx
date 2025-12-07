@@ -11,6 +11,7 @@ import img2 from "../../assets/image2.png";
 /* {import video2 from "../../assets/video2.mp4";} */
 import imagemob1 from "../../assets/imagemob1.png";
 import imagemob2 from "../../assets/imagemob2.png";
+import imagemob3 from "../../assets/imagemob3.png"
 const HeroBanner = () => {
   const swiperRef = useRef(null);
   const videoRef = useRef(null);
@@ -107,10 +108,15 @@ const HeroBanner = () => {
           />
         </SwiperSlide>
         <SwiperSlide>
+             <img
+            src={imagemob3}
+            alt="Mobile Banner"
+            className="block md:hidden w-full h-[660px]"
+          />
           <img
             src={img2}
             alt="Banner 2"
-            className="w-[400px] h-[660px] lg:w-full lg:h-full object-cover"
+            className="w-full h-full object-cover"
           />
         </SwiperSlide>
       </Swiper>
