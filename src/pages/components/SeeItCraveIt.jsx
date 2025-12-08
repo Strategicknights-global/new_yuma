@@ -3,16 +3,13 @@ import { ThreeDVideoRing } from "./ThreeDVideoRing";
 import { Sparkles, Eye, Heart, UtensilsCrossed } from "lucide-react";
 
 const youtubeShorts = [
-  { id: 1, videoId: "Lz-5ViiCZmo" },
-  { id: 2, videoId: "2iHlsmkp6I4" },
-  { id: 3, videoId: "qT0Olwyv108" },
-  { id: 4, videoId: "JLbVad08jkQ" },
-  { id: 5, videoId: "CiUEODyBsQk" },
-  { id: 6, videoId: "Lz-5ViiCZmo" },
-  { id: 7, videoId: "2iHlsmkp6I4" },
-  { id: 8, videoId: "qT0Olwyv108" },
-  { id: 9, videoId: "JLbVad08jkQ" },
-  { id: 10, videoId: "CiUEODyBsQk" },
+  { id: 1, videoId: "Ss_xA5Wvo7A" },
+  { id: 2, videoId: "ufmRcjiDg6I" },
+  { id: 3, videoId: "kOk0TyJ2zHI" },
+  { id: 4, videoId: "r2ZD7XhzPaQ" },
+  { id: 5, videoId: "2LRmaHuvLEs" },
+  { id: 6, videoId: "LvN_wUTENDE" },
+
 ];
 
 const SeeItCraveIt = () => (
@@ -36,7 +33,7 @@ const SeeItCraveIt = () => (
           width={350}
           height={625}
           // --- Value Changed Here for Maximum Closeness ---
-          videoDistance={600}   // Reduced from 400 to make the ring even tighter
+          videoDistance={400}   // Reduced from 400 to make the ring even tighter
           // --- Other props remain the same ---
           perspective={1200}
           autoRotate={true}

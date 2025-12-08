@@ -1,10 +1,36 @@
 import React from "react";
 import { Star, Quote } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+import image1 from "../../assets/testimonials/testimonial1.jpeg";
+import image2 from "../../assets/testimonials/testimonial2.jpeg";
+import image3 from "../../assets/testimonials/testimonial3.jpeg";
+import image4 from "../../assets/testimonials/testimonial4.jpeg";
+import image5 from "../../assets/testimonials/testimonial5.jpeg";
+import image6 from "../../assets/testimonials/testimonial6.jpeg";
+import image7 from "../../assets/testimonials/testimonial7.jpeg";
+import image8 from "../../assets/testimonials/testimonial8.jpeg";
+import image9 from "../../assets/testimonials/testimonial9.jpeg";
+import image10 from "../../assets/testimonials/testimonial10.jpeg";
+import image11 from "../../assets/testimonials/testimonial11.jpeg";
+import image12 from "../../assets/testimonials/testimonial12.jpeg";
+
 
 const testimonials = [
-  { quote: "The malt drink is so refreshing and rich in flavor!", name: "Priya M.", title: "Coimbatore" },
-  { quote: "I ordered the combo pack of snacks and malt — fresh & tasty!", name: "Raju M.", title: "Coimbatore" },
-  { quote: "Crispy and fresh! Tasted like my childhood.", name: "Nivi M.", title: "Coimbatore" },
+ {image: image1},
+ {image: image2},
+ {image: image3},
+ {image: image4},
+ {image: image5},
+ {image: image6},
+ {image: image7},
+ {image: image8},
+ {image: image9},
+ {image: image10},
+ {image: image11},
+ {image: image12},
 ];
 
 const Testimonials = () => (
@@ -22,43 +48,33 @@ const Testimonials = () => (
           Join thousands of satisfied customers enjoying authentic flavors
         </p>
       </div>
+<Swiper
+  modules={[Pagination, Autoplay]}
+  spaceBetween={30}
+  slidesPerView={1}
+  autoplay={{ delay: 2500 }}
+  pagination={{ clickable: true }}
+  breakpoints={{
+    768: { slidesPerView: 2 },
+    1024: { slidesPerView: 3 }
+  }}
+  className="max-w-6xl mx-auto pb-12"
+>
+  {testimonials.map((t, i) => (
+    <SwiperSlide key={i}>
+      <div className="bg-white/70 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+        
+        <img 
+          src={t.image} 
+          alt={`testimonial-${i}`}
+          className="w-full h-150 object-cover rounded-xl shadow-md border"
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {testimonials.map((t, i) => (
-          <div 
-            key={i} 
-            className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
-          >
-            <div className="relative">
-              <Quote className="w-10 h-10 text-[#57ba40] opacity-50 mb-4" />
-              
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: 5 }).map((_, idx) => (
-                  <Star 
-                    key={idx} 
-                    className="w-5 h-5 text-amber-400 fill-amber-400 transition-transform duration-300 group-hover:scale-110" 
-                    style={{ transitionDelay: `${idx * 50}ms` }}
-                  />
-                ))}
-              </div>
-              
-              <p className="text-gray-700 text-lg leading-relaxed mb-6 italic">
-                "{t.quote}"
-              </p>
-              
-              <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#57ba40] to-[#3d8a2d] flex items-center justify-center text-white font-bold text-lg">
-                  {t.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{t.name}</p>
-                  <p className="text-sm text-gray-500">{t.title}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
+    </SwiperSlide>
+  ))}
+</Swiper>
+
     </div>
 
     <style>{`

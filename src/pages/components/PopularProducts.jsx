@@ -38,6 +38,7 @@ const getDiscountPercentage = (product) => {
   return 0;
 };
 
+
 /* ----------------------- ProductCard ------------------------ */
 /* ProductCard is a separate component so hooks can be used inside safely */
 // function ProductCard({ product, categories, wishlist, onToggleWishlist, onAddToCart, navigate, showNotification }) {
@@ -180,7 +181,7 @@ const PopularProducts = ({ products = [], categories = [] }) => {
   const { user, isLoggedIn } = useAuth();
 
   const [searchParams] = useSearchParams();
-
+const [showComingSoon, setShowComingSoon] = useState(true);
   useEffect(() => {
     // read ?category=... and ?goal=...
     const urlCategory = searchParams.get("category");
@@ -305,7 +306,42 @@ const handleWishlistToggle = async (product, e) => {
 
     return false;
   });
-
+  const getDiverseProducts = (products, categories) => {
+    const diverse = [];
+    const used = new Set();
+    
+    // Try to get one product from each category first
+    categories.forEach(cat => {
+      const productFromCat = products.find(p => {
+        if (used.has(p.id)) return false;
+        
+        // Check if product belongs to this category
+        if (p.category && String(p.category).trim().toLowerCase() === String(cat.name).trim().toLowerCase()) {
+          return true;
+        }
+        if (p.categoryId && (String(p.categoryId) === String(cat.id) || String(p.categoryId?.id) === String(cat.id))) {
+          return true;
+        }
+        return false;
+      });
+      
+      if (productFromCat) {
+        diverse.push(productFromCat);
+        used.add(productFromCat.id);
+      }
+    });
+    
+    // Fill remaining slots with any other products
+    products.forEach(p => {
+      if (diverse.length >= 4) return;
+      if (!used.has(p.id)) {
+        diverse.push(p);
+        used.add(p.id);
+      }
+    });
+    
+    return diverse.slice(0, 4);
+  };
   return (
     <section className="py-12 bg-white relative">
       {notification && (
@@ -344,13 +380,27 @@ const handleWishlistToggle = async (product, e) => {
         {/* products grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-xl text-gray-500">No products found matching your selection.</p>
-            <button onClick={() => { setActiveGoal(null); setActiveCategory("All"); }} className="mt-4 text-[#57ba40] font-bold hover:underline">Clear all filters</button>
+           <p className="text-3xl text-[#57ba40] font-semibold flex items-center gap-2 justify-center">
+  Coming Soon
+  <span className="inline-flex gap-1">
+    <span className="animate-bounce" style={{ animationDelay: '0s' }}>.</span>
+    <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
+    <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>.</span>
+  </span>
+</p>
+            {!showComingSoon  && (
+    <button 
+      onClick={() => { setActiveGoal(null); setActiveCategory("All"); }} 
+      className="mt-4 text-[#57ba40] font-bold hover:underline"
+    >
+      Clear all filters
+    </button>
+  )}
           </div>
         ) : (
            <Suspense fallback={<div>Loading products...</div>}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:mx-50">
-            {filteredProducts.slice(0, 4).map(prod => (
+            {getDiverseProducts(filteredProducts, categories).map(prod => (
               <ProductCard
                 key={prod.id}
                 product={prod}

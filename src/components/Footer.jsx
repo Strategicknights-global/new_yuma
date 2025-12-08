@@ -18,7 +18,7 @@ const Footer = () => (
         <img
           src={logo}
           alt="Yuma's Fresh Foods Logo"
-          className="w-32 mb-4 mx-auto md:mx-0"
+          className="w-32 mb-4  md:mx-0"
         />
 
         <div className="flex items-start justify-center md:justify-start mb-2">
@@ -76,18 +76,23 @@ const Footer = () => (
           <h4 className="font-bold text-lg mb-4 text-white">Our Policy</h4>
           <ul className="space-y-2 text-sm">
             <li>
-              <Link to="/policies" className="hover:underline">
-                Policies
+              <Link to="/privacy" className="hover:underline">
+                Privacy Policy
               </Link>
             </li>
             <li>
-              <Link to="/policies" className="hover:underline">
+              <Link to="/terms" className="hover:underline">
                 Terms and Conditions
               </Link>
             </li>
-            <li>
-              <Link to="/delivery" className="hover:underline">
-                Delivery Information
+             <li>
+              <Link to="/shipping" className="hover:underline">
+                Shipping Policy
+              </Link>
+            </li>
+             <li>
+              <Link to="/refund" className="hover:underline">
+              Refund Policy
               </Link>
             </li>
             <li>

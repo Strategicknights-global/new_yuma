@@ -90,11 +90,11 @@ const Navbar = () => {
   <img
     src={logo}
     alt="Yuma Foods Logo"
-    className="h-12 w-12 sm:h-10 sm:w-10 lg:h-20 lg:w-20"
+    className="h-18 w-18 sm:h-10 sm:w-10 lg:h-20 lg:w-20"
   />
 
   <span
-    className={`text-xl sm:text-2xl lg:text-3xl font-bold ${textColor}`}
+    className={`text-[18px] sm:text-xl lg:text-3xl font-bold ${textColor}`}
     style={{ fontFamily: "'Baloo 2', cursive" }}
   >
     Yuma's Fresh Foods

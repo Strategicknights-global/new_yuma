@@ -26,6 +26,10 @@ import Footer from './components/Footer.jsx';
 import { db } from '../firebase.js';
 import { doc, getDoc } from 'firebase/firestore';
 import { FaWhatsapp } from 'react-icons/fa';
+import Refund from './pages/components/Refund.jsx';
+import Terms from './pages/components/Terms.jsx';
+import Privacy from './pages/components/PrivacyPolicy.jsx';
+import Shipping from './pages/components/Shipping.jsx';
 
 function App() {
   const [siteConfig, setSiteConfig] = useState(null);
@@ -82,7 +86,10 @@ function App() {
                 <Route path="/orders/:orderId" element={<OrderDetailPage />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/bulk-enquiry" element={<BulkEnquiry />} /> 
-                <Route path="/policies" element={<Policies />} />
+                <Route path="/refund" element={<Refund />} />
+                <Route path='/terms' element={<Terms/>}/>
+                 <Route path='/privacy' element={<Privacy/>}/>
+                 <Route path='/shipping' element={<Shipping/>}/>
               </Routes>
             </main>
 

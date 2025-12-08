@@ -191,7 +191,24 @@ const ProductDetailPage = () => {
       setTimeout(() => buttonRef.current.classList.remove("clicked"), 1500);
     }
   };
-
+ const handleBuyNow = () => {
+    if (!isLoggedIn) {
+      // Redirect to login page
+      window.location.href = '/login';
+      return;
+    }
+    
+    if (!product?.inStock) {
+      showNotification('This product is out of stock.');
+      return;
+    }
+    
+    // Add to cart first
+    addToCart(product, quantity, selectedVariant);
+    
+    // Then redirect to checkout
+    window.location.href = '/checkout';
+  };
   const handleWishlistToggle = async () => {
     if (!isLoggedIn) return setShowLoginModal(true);
     try {
@@ -407,7 +424,13 @@ const ProductDetailPage = () => {
                 <i className="fas fa-shopping-cart"></i>
                 <i className="fas fa-box"></i>
               </button>
-              
+               <button 
+    onClick={handleBuyNow} 
+    disabled={stockStatus !== "in"} 
+    className="px-4 sm:px-6 py-2.5 sm:py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-all text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+  >
+    Buy Now
+  </button>
               <button 
                 onClick={handleWishlistToggle} 
                 className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 flex-shrink-0"
