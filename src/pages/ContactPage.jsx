@@ -196,7 +196,7 @@ const ContactPage = () => {
               </p>
               <p className="text-[#000000] mt-2">
                 <strong>Phone:</strong>{" "}
-                {siteConfig?.footerInfo?.phone || "+91 98765 43210"}
+                {siteConfig?.footerInfo?.phone || "+91 9663208248"}
               </p>
             </div>
             <div className="bg-[#ffffff] p-8 rounded-lg shadow-lg">

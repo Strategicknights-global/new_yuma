@@ -298,7 +298,7 @@ import signbackground from "../assets/sign_background.png";
 import { EyeIcon, EyeSlashIcon, PhoneIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import logo from "../assets/logo.png"
 const AuthPage = () => {
-  const [authMethod, setAuthMethod] = useState('email'); 
+  const [authMethod, setAuthMethod] = useState('phone'); 
   const [isLoginMode, setIsLoginMode] = useState(true);
   
   // Email States
@@ -546,15 +546,6 @@ const AuthPage = () => {
         <div className="flex bg-gray-100 p-1 rounded-lg">
           <button
             type="button"
-            onClick={() => { setAuthMethod('email'); setError(''); }}
-            className={`flex-1 flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all ${
-              authMethod === 'email' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <EnvelopeIcon className="w-4 h-4 mr-2" /> Email
-          </button>
-          <button
-            type="button"
             onClick={() => { setAuthMethod('phone'); setError(''); }}
             className={`flex-1 flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all ${
               authMethod === 'phone' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
@@ -562,46 +553,18 @@ const AuthPage = () => {
           >
             <PhoneIcon className="w-4 h-4 mr-2" /> Mobile
           </button>
+          <button
+            type="button"
+            onClick={() => { setAuthMethod('email'); setError(''); }}
+            className={`flex-1 flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all ${
+              authMethod === 'email' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <EnvelopeIcon className="w-4 h-4 mr-2" /> Email
+          </button>
+          
         </div>
-
-        {/* EMAIL FORM */}
-        {authMethod === 'email' && (
-          <>
-            <form className="space-y-6" onSubmit={handleEmailSubmit}>
-              {!isLoginMode && (
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Full Name</label>
-                  <input type="text" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
-                </div>
-              )}
-              <div>
-                <label className="text-sm font-medium text-gray-700">Email address</label>
-                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
-              </div>
-              <div className="relative">
-                <label className="text-sm font-medium text-gray-700">Password</label>
-                <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm pr-10 focus:ring-red-500 focus:border-red-500" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10">
-                  {showPassword ? <EyeSlashIcon className="w-5 h-5 text-gray-500" /> : <EyeIcon className="w-5 h-5 text-gray-500" />}
-                </button>
-              </div>
-              
-              {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-              
-              <button type="submit" disabled={loading} className="w-full px-4 py-2 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50">
-                {loading ? 'Processing...' : (isLoginMode ? 'Log In' : 'Sign Up')}
-              </button>
-            </form>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              {isLoginMode ? "Don't have an account?" : 'Already have an account?'}{' '}
-              <button onClick={() => setIsLoginMode(!isLoginMode)} className="font-medium text-red-600 hover:underline">
-                {isLoginMode ? 'Sign up' : 'Log in'}
-              </button>
-            </p>
-          </>
-        )}
-
-        {/* PHONE FORM */}
+  {/* PHONE FORM */}
         {authMethod === 'phone' && (
           <form className="space-y-6" onSubmit={showOtpInput ? handleVerifyOtp : handleSendOtp}>
             
@@ -661,6 +624,44 @@ const AuthPage = () => {
           </form>
         )}
 
+        {/* EMAIL FORM */}
+        {authMethod === 'email' && (
+          <>
+            <form className="space-y-6" onSubmit={handleEmailSubmit}>
+              {!isLoginMode && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Full Name</label>
+                  <input type="text" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
+                </div>
+              )}
+              <div>
+                <label className="text-sm font-medium text-gray-700">Email address</label>
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
+              </div>
+              <div className="relative">
+                <label className="text-sm font-medium text-gray-700">Password</label>
+                <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm pr-10 focus:ring-red-500 focus:border-red-500" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10">
+                  {showPassword ? <EyeSlashIcon className="w-5 h-5 text-gray-500" /> : <EyeIcon className="w-5 h-5 text-gray-500" />}
+                </button>
+              </div>
+              
+              {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+              
+              <button type="submit" disabled={loading} className="w-full px-4 py-2 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50">
+                {loading ? 'Processing...' : (isLoginMode ? 'Log In' : 'Sign Up')}
+              </button>
+            </form>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              {isLoginMode ? "Don't have an account?" : 'Already have an account?'}{' '}
+              <button onClick={() => setIsLoginMode(!isLoginMode)} className="font-medium text-red-600 hover:underline">
+                {isLoginMode ? 'Sign up' : 'Log in'}
+              </button>
+            </p>
+          </>
+        )}
+
+      
         {/* GOOGLE AUTH */}
         <div className="relative flex items-center justify-center w-full mt-6 border-t border-gray-300">
           <div className="absolute px-3 bg-white text-gray-500 text-sm">Or continue with</div>

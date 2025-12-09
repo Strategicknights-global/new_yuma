@@ -80,21 +80,23 @@ const Footer = () => (
                 Privacy Policy
               </Link>
             </li>
+             <li>
+              <Link to="/refund" className="hover:underline">
+              Return & Refund Policy
+              </Link>
+            </li>
+              <li>
+              <Link to="/shipping" className="hover:underline">
+                Shipping Policy
+              </Link>
+            </li>
+            
             <li>
               <Link to="/terms" className="hover:underline">
                 Terms and Conditions
               </Link>
             </li>
-             <li>
-              <Link to="/shipping" className="hover:underline">
-                Shipping Policy
-              </Link>
-            </li>
-             <li>
-              <Link to="/refund" className="hover:underline">
-              Refund Policy
-              </Link>
-            </li>
+           
             <li>
               <Link to="/contact" className="hover:underline">
                 Contact us

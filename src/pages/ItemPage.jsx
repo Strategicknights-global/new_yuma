@@ -365,7 +365,7 @@ const ItemPage = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Phone className="w-4 h-4" />
-                  <span>Click here to chat on WhatsApp +91 99999 99999</span>
+                  <span>Click here to chat on WhatsApp +91 9663208248</span>
                 </div>
               </div>
             </div>

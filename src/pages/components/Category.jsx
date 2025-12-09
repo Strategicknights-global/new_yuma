@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Apple, Baby, Users, Coffee, Heart, Tag, Truck } from "lucide-react";
+import { Activity, Apple, Baby, Users, Coffee, Heart, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import { collection, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { useAuth } from "../../context/AuthContext";
@@ -10,6 +10,7 @@ export default function Categories() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
+  const scrollContainerRef = useRef(null);
 
   const categoryList = [
     { icon: <Baby className="w-10 h-10 text-[#2f8f2b]" />, label: "Kids Friendly" },
@@ -25,6 +26,9 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState([]);
   const [notification, setNotification] = useState("");
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  
   useEffect(() => {
     const goalsRef = collection(db, "shopGoals"); 
     
@@ -112,6 +116,7 @@ export default function Categories() {
       setTimeout(() => { if (buttonRef.current) buttonRef.current.style.transform = "scale(1)"; }, 150);
     }
   };
+  
   useEffect(() => {
     const productsRef = collection(db, "products");
     
@@ -137,27 +142,50 @@ export default function Categories() {
 
   const filteredProducts = allProducts.filter((product) => {
     if (selectedGoalId && product.goalId === selectedGoalId) {
-
       return true;
     }
     if (product.goalName && String(product.goalName).trim().toLowerCase() === String(selectedCategory).trim().toLowerCase()) {
       return true;
     }
-
     if (selectedGoalId && product.goalIds?.includes(selectedGoalId)) {
       return true;
     }
-    
     return false;
   });
   
-
   const handleProductClick = (productId) => {
     navigate(`/products/${productId}`);
   };
 
   const handleCategoryClick = (categoryLabel) => {
     setSelectedCategory(categoryLabel);
+  };
+
+  // Check scroll position
+  const checkScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  // Update scroll position on products change
+  useEffect(() => {
+    checkScrollPosition();
+  }, [filteredProducts]);
+
+  // Smooth scroll function
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300; // Adjust scroll distance
+      const newScrollLeft = scrollContainerRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+      
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
@@ -194,25 +222,59 @@ export default function Categories() {
             {selectedCategory} Products
           </h2>
 
-         <div className="overflow-x-auto px-6 py-4">
+          <div className="relative px-6 py-4 max-w-[1400px] mx-auto">
             <style jsx>{`
-              div::-webkit-scrollbar {
+              .scrollbar-hide::-webkit-scrollbar {
                 display: none;
               }
+              .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
             `}</style>
-           <div className="flex gap-6 justify-center w-max mx-auto">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  wishlist={wishlist}
-                  onToggleWishlist={handleWishlistToggle}
-                  onAddToCart={handleAddToCart}
-                  onClick={() => handleProductClick(product.id)}
-                  navigate={navigate}
-                  showNotification={showNotification}
-                />
-              ))}
+
+            {/* Left Arrow */}
+            {canScrollLeft && (
+              <button
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="w-6 h-6 text-[#2f8f2b]" />
+              </button>
+            )}
+
+            {/* Right Arrow */}
+            {canScrollRight && (
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-6 h-6 text-[#2f8f2b]" />
+              </button>
+            )}
+
+            {/* Scrollable Container */}
+            <div 
+              ref={scrollContainerRef}
+              onScroll={checkScrollPosition}
+              className="overflow-x-auto scrollbar-hide scroll-smooth"
+            >
+              <div className="flex gap-6 px-2">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    wishlist={wishlist}
+                    onToggleWishlist={handleWishlistToggle}
+                    onAddToCart={handleAddToCart}
+                    onClick={() => handleProductClick(product.id)}
+                    navigate={navigate}
+                    showNotification={showNotification}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </>
@@ -279,14 +341,14 @@ function ProductCard({ product, wishlist, onToggleWishlist, onAddToCart, onClick
   const isInStock = product.inStock !== false;
 
   return (
-    <div className="min-w-[250px] w-[250px] flex-shrink-0 gap-4 justify-center">
+    <div className="min-w-[250px] w-[250px] flex-shrink-0">
       <div className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
         {/* Lazy Loaded Image */}
         <img
           src={product.images?.[0] || "https://via.placeholder.com/150"}
           alt={product.name}
           onClick={onClick}
-          loading="lazy" // <--- lazy loading here
+          loading="lazy"
           className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
         />
 

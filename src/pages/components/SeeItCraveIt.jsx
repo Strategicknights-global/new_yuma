@@ -3,11 +3,11 @@ import { ThreeDVideoRing } from "./ThreeDVideoRing";
 import { Sparkles, Eye, Heart, UtensilsCrossed } from "lucide-react";
 
 const youtubeShorts = [
-  { id: 1, videoId: "Ss_xA5Wvo7A" },
-  { id: 2, videoId: "ufmRcjiDg6I" },
-  { id: 3, videoId: "kOk0TyJ2zHI" },
-  { id: 4, videoId: "r2ZD7XhzPaQ" },
-  { id: 5, videoId: "2LRmaHuvLEs" },
+  { id: 1, videoId: "c6LmdQzqWCo" },
+  { id: 2, videoId: "pVqHJf5EPx4" },
+  { id: 3, videoId: "mclMamdvEeA" },
+  { id: 4, videoId: "2LRmaHuvLEs" },
+  { id: 5, videoId: "Ss_xA5Wvo7A" },
   { id: 6, videoId: "LvN_wUTENDE" },
 
 ];

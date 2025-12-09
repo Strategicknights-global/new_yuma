@@ -10,11 +10,11 @@ import reel4 from "../../assets/video/reel4.mp4";
 import reel5 from "../../assets/video/reel5.mp4";
 
 const instagramReels = [
-  { id: 1, url: "https://www.instagram.com/reel/DP_kVLriapp/", video: reel1 },
-  { id: 2, url: "https://www.instagram.com/reel/DOxElkLCXmY/", video: reel2 },
-  { id: 3, url: "https://www.instagram.com/reel/DMnbRLEPYtT/", video: reel3 },
-  { id: 4, url: "https://www.instagram.com/reel/DLmRSeCvlIo/", video: reel4 },
-  { id: 5, url: "https://www.instagram.com/reel/DMeYuDHPJxu/", video: reel5 },
+  { id: 1, url: "https://www.instagram.com/reel/DMeYuDHPJxu/?igsh=MWlyNGo3YmVicmtiaQ==", video: reel1 },
+  { id: 2, url: "https://www.instagram.com/reel/DRmnVRziRZb/?igsh=NWpwbmh4Z3Q5NDQy", video: reel2 },
+  { id: 3, url: "https://www.instagram.com/reel/DNvtg4hZC-_/?igsh=MTM3Y2ZucDY3aWlqbQ==", video: reel3 },
+  { id: 4, url: "https://www.instagram.com/reel/DMrpgkevSoz/?igsh=MTBhNjhpanUxNXA5bQ==", video: reel4 },
+  { id: 5, url: "https://www.instagram.com/reel/DMiOKh2vs6u/?igsh=MWM2czczbHlmOHo0cA==", video: reel5 },
 ];
 
 const SocialMedia = () => {
