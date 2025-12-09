@@ -12,7 +12,7 @@ import image5 from "../../assets/testimonials/testimonial5.jpeg";
 import image6 from "../../assets/testimonials/testimonial6.jpeg";
 import image7 from "../../assets/testimonials/testimonial7.jpeg";
 import image8 from "../../assets/testimonials/testimonial8.jpeg";
-import image9 from "../../assets/testimonials/testimonial9.jpeg";
+/*{import image9 from "../../assets/testimonials/testimonial9.jpeg";}*/
 import image10 from "../../assets/testimonials/testimonial10.jpeg";
 import image11 from "../../assets/testimonials/testimonial11.jpeg";
 import image12 from "../../assets/testimonials/testimonial12.jpeg";
@@ -27,7 +27,7 @@ const testimonials = [
  {image: image6},
  {image: image7},
  {image: image8},
- {image: image9},
+//  {image: image9},
  {image: image10},
  {image: image11},
  {image: image12},
@@ -67,7 +67,7 @@ const Testimonials = () => (
         <img 
           src={t.image} 
           alt={`testimonial-${i}`}
-          className="w-full h-150 object-cover rounded-xl shadow-md border"
+          className="w-full h-180 object-cover rounded-xl shadow-md border"
         />
 
       </div>

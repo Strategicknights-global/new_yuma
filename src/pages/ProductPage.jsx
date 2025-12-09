@@ -254,7 +254,6 @@ const ProductPage = () => {
   const { user, isLoggedIn } = useAuth();
   const { addToCart } = useCart();
 
-  // ✅ CHANGE 1: Added goals state
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -273,7 +272,6 @@ const ProductPage = () => {
   // Load wishlist from localStorage for guests or Firebase for logged-in users
   useEffect(() => {
     if (!user) {
-      // Guest user - load from localStorage
       const guestWishlist = JSON.parse(
         localStorage.getItem("guestWishlist") || "[]"
       );
@@ -281,7 +279,6 @@ const ProductPage = () => {
       return;
     }
 
-    // Logged-in user - load from Firebase
     const userRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -293,7 +290,7 @@ const ProductPage = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // ✅ CHANGE 2: Added goals fetch from shopGoals collection
+  // Fetch products, categories, and goals
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -324,57 +321,54 @@ const ProductPage = () => {
     fetchData();
   }, []);
 
+  // Read filters from URL parameters
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const customCategory = params.get("customCategory");
+    const categoryName = params.get("category");
+    
+    // Find category by name
+    const category = categories.find((c) => c.name === categoryName);
 
+    setSearchTerm(params.get("search") || "");
+    
+    // Handle custom category or regular category
     if (customCategory) {
       setActiveCategories([customCategory]);
+    } else if (category) {
+      setActiveCategories([category.id]);
+    } else {
+      const categoriesParam = params.get("categories");
+      setActiveCategories(categoriesParam ? categoriesParam.split(",").filter(Boolean) : []);
     }
-
-    const categoryName = params.get("category");
-    const category = categories.find((c) => c.name === categoryName);
-
-    setSearchTerm(params.get("search") || "");
-    setActiveCategories(
-      customCategory
-        ? [customCategory]
-        : category
-        ? [category.id]
-        : params.get("categories")?.split(",").filter(Boolean) || []
-    );
-  }, [location.search, categories]);
-
-  // ✅ CHANGE 3: Added goalFilter to URL reading
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const categoryName = params.get("category");
-    const category = categories.find((c) => c.name === categoryName);
-
-    setSearchTerm(params.get("search") || "");
-    setActiveCategories(
-      category
-        ? [category.id]
-        : params.get("categories")?.split(",").filter(Boolean) || []
-    );
+    
     setSortOption(params.get("sort") || "top-sales");
     setPriceRange(Number(params.get("price")) || 5000);
     setGoalFilter(params.get("goal") || "");
     setCurrentPage(Number(params.get("page")) || 1);
   }, [location.search, categories]);
 
-  // ✅ CHANGE 4: Added goalFilter to URL writing with proper dependency
+  // Update URL with current filters
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("search", searchTerm);
+    
     if (activeCategories.length > 0) {
-      if (activeCategories.length === 1) {
+      // Check if it's a custom category (string) or regular category (ID)
+      const firstCategory = activeCategories[0];
+      const isCustomCategory = typeof firstCategory === 'string' && 
+                               !categories.find(c => c.id === firstCategory);
+      
+      if (isCustomCategory) {
+        params.set("customCategory", firstCategory);
+      } else if (activeCategories.length === 1) {
         const category = categories.find((c) => c.id === activeCategories[0]);
         if (category) params.set("category", category.name);
       } else {
         params.set("categories", activeCategories.join(","));
       }
     }
+    
     if (sortOption !== "top-sales") params.set("sort", sortOption);
     if (priceRange < 5000) params.set("price", priceRange);
     if (goalFilter) params.set("goal", goalFilter);
@@ -393,7 +387,7 @@ const ProductPage = () => {
     categories,
   ]);
 
-  // ✅ CHANGE 5: Updated filtering logic to match Categories.jsx
+  // FIXED: Filter and sort products
   const filteredProducts = useMemo(() => {
     // Find the selected goal object from the goals collection
     const selectedGoal = goals.find(g => 
@@ -401,41 +395,49 @@ const ProductPage = () => {
     );
     const selectedGoalId = selectedGoal?.id;
 
+    // Get category names from IDs for comparison
+    const selectedCategoryNames = activeCategories.map(catId => {
+      const cat = categories.find(c => c.id === catId);
+      return cat ? cat.name : catId; // If not found, assume it's a custom category string
+    });
+
     return products
-      // search filter
+      // Search filter
       .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
-      // category filter
+      // Category filter - FIXED LOGIC for multiple categories
       .filter((p) => {
         if (activeCategories.length === 0) return true;
-        const textCategory = activeCategories[0];
-
-        return (
-          p.categoryName === textCategory ||
-          p.customCategory === textCategory ||
-          p.customCategories?.includes(textCategory) ||
-          p.tags?.includes(textCategory)
-        );
+        
+        // Check if product matches any selected category
+        return activeCategories.some((catId, index) => {
+          const catName = selectedCategoryNames[index];
+          return (
+            p.categoryName === catName ||
+            p.category === catName ||
+            p.categoryId === catId || // Check by ID for each category
+            p.customCategory === catName ||
+            p.customCategories?.includes(catName) ||
+            p.tags?.includes(catName)
+          );
+        });
       })
 
-      // price filter
+      // Price filter
       .filter((p) => getProductPrice(p) <= priceRange)
 
-      // goal filter - matching Categories.jsx logic
+      // Goal filter
       .filter((p) => {
-        if (!goalFilter) return true; // Show all products when no goal selected
+        if (!goalFilter) return true;
         
-        // Check if product's goalId matches the selected goal's ID
         if (selectedGoalId && p.goalId === selectedGoalId) {
           return true;
         }
         
-        // Check if product's goalName matches the selected goal name
         if (p.goalName && String(p.goalName).trim().toLowerCase() === String(goalFilter).trim().toLowerCase()) {
           return true;
         }
         
-        // Check if product's goalIds array includes the selected goal ID
         if (selectedGoalId && p.goalIds?.includes(selectedGoalId)) {
           return true;
         }
@@ -443,7 +445,7 @@ const ProductPage = () => {
         return false;
       })
 
-      // sorting
+      // Sorting
       .sort((a, b) => {
         switch (sortOption) {
           case "top-sales":
@@ -466,6 +468,7 @@ const ProductPage = () => {
     sortOption,
     goalFilter,
     goals,
+    categories,
   ]);
 
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
@@ -485,7 +488,6 @@ const ProductPage = () => {
 
   const handleWishlistToggle = async (product) => {
     if (!isLoggedIn) {
-      // Guest user - use localStorage
       const guestWishlist = JSON.parse(
         localStorage.getItem("guestWishlist") || "[]"
       );
@@ -504,7 +506,6 @@ const ProductPage = () => {
       return;
     }
 
-    // Logged-in user - use Firebase
     try {
       const userRef = doc(db, "users", user.uid);
       if (wishlist.includes(product.id)) {
@@ -618,7 +619,6 @@ const ProductPage = () => {
         </select>
       </div>
 
-      {/* ✅ CHANGE 6: Updated dropdown with correct values and "All Products" as first option */}
       <div>
         <h3 className="font-semibold mb-3 text-lg text-[#000000]">
           Shop as per Goal
