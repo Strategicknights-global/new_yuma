@@ -185,7 +185,7 @@ const CartPage = () => {
         )}
 
         {/* Contact Section */}
-        {cart && cart.length > 0 && (
+        {/* {cart && cart.length > 0 && (
           <div className="mt-12 bg-gradient-to-r from-teal-700 to-teal-600 rounded-2xl p-8 text-white">
             <div className="max-w-2xl">
               <h2 className="text-2xl font-bold mb-2">WE'RE HERE TO HELP YOU!</h2>
@@ -206,7 +206,7 @@ const CartPage = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </main>
     </div>
   );
