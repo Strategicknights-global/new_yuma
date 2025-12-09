@@ -509,7 +509,7 @@ const AuthPage = () => {
 
   {/* Back Arrow */}
   <button 
-    onClick={() => navigate(-1)}
+    onClick={() => navigate("/")}
     className="absolute left-0 top-8 p-2"
   >
     <svg 

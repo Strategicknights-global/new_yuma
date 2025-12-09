@@ -45,6 +45,8 @@ const StarRating = ({ rating, size = 'w-5 h-5' }) => {
 };
 
 const ProductDetailPage = () => {
+  // In your ProductDetailsPage component
+
   const { id } = useParams();
   const { addToCart } = useCart();
   const { user, isLoggedIn } = useAuth();
@@ -137,7 +139,9 @@ const ProductDetailPage = () => {
 
     fetchRelatedProducts();
   }, [product, id]);
-
+useEffect(() => {
+  window.scrollTo(0, 0);
+}, [id]);
   useEffect(() => {
     if (!id) return;
 
@@ -155,14 +159,21 @@ const ProductDetailPage = () => {
     return () => unsubscribe();
   }, [id]);
 
-  useEffect(() => {
-    if (!user) return setWishlist([]);
-    const userRef = doc(db, 'users', user.uid);
-    const unsubscribe = onSnapshot(userRef, (docSnap) => {
-      if (docSnap.exists()) setWishlist(docSnap.data().wishlist || []);
-    });
-    return () => unsubscribe();
-  }, [user]);
+useEffect(() => {
+  if (!user) {
+    // ✅ Load from localStorage for non-logged-in users
+    const localWishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    setWishlist(localWishlist);
+    return;
+  }
+  
+  // ✅ For logged-in users: Firebase listener
+  const userRef = doc(db, 'users', user.uid);
+  const unsubscribe = onSnapshot(userRef, (docSnap) => {
+    if (docSnap.exists()) setWishlist(docSnap.data().wishlist || []);
+  });
+  return () => unsubscribe();
+}, [user]);
 
   useEffect(() => {
     if (isLoggedIn && user) setNewReviewName(user.displayName || '');
@@ -179,52 +190,91 @@ const ProductDetailPage = () => {
     setTimeout(() => setNotification(''), 3000);
   };
 
-  const handleAddToCart = () => {
-    if (!isLoggedIn) return setShowLoginModal(true);
-    if (!product?.inStock) return showNotification('This product is out of stock.');
-    addToCart(product, quantity, selectedVariant);
-    const displayName = selectedVariant ? `${product.name} (${selectedVariant.size})` : product.name;
-    showNotification(`${quantity} x ${displayName} added to cart!`);
+const handleAddToCart = () => {
+  // Check if product is in stock
+  if (!product?.inStock) {
+    showNotification('This product is out of stock.');
+    return;
+  }
+  
+  // ✅ FIX: Create product object with image property
+  const productWithImage = {
+    ...product,
+    image: product.image || product.images?.[0] || null
+  };
+  
+  // ✅ Pass productWithImage instead of product
+  addToCart(productWithImage, quantity, selectedVariant);
+  
+  // Show notification
+  const displayName = selectedVariant 
+    ? `${product.name} (${selectedVariant.size})` 
+    : product.name;
+  showNotification(`${quantity} x ${displayName} added to cart!`);
 
-    if (buttonRef.current) {
-      buttonRef.current.classList.add("clicked");
-      setTimeout(() => buttonRef.current.classList.remove("clicked"), 1500);
-    }
+  // Button animation
+  if (buttonRef.current) {
+    buttonRef.current.classList.add("clicked");
+    setTimeout(() => buttonRef.current.classList.remove("clicked"), 1500);
+  }
+};
+const handleBuyNow = () => {
+  if (!isLoggedIn) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  if (!product?.inStock) {
+    showNotification('This product is out of stock.');
+    return;
+  }
+  
+  // ✅ FIX: Create product object with image property
+  const productWithImage = {
+    ...product,
+    image: product.image || product.images?.[0] || null
   };
- const handleBuyNow = () => {
-    if (!isLoggedIn) {
-      // Redirect to login page
-      window.location.href = '/login';
-      return;
-    }
+  
+  // ✅ Pass productWithImage instead of product
+  addToCart(productWithImage, quantity, selectedVariant);
+  
+  // Then redirect to checkout
+  window.location.href = '/checkout';
+};
+const handleWishlistToggle = async () => {
+  if (!isLoggedIn) {
+    // ✅ Use localStorage for non-logged-in users
+    const localWishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
     
-    if (!product?.inStock) {
-      showNotification('This product is out of stock.');
-      return;
+    if (localWishlist.includes(product.id)) {
+      const updated = localWishlist.filter(id => id !== product.id);
+      localStorage.setItem("wishlist", JSON.stringify(updated));
+      setWishlist(updated);
+      showNotification(`${product.name} removed from wishlist`);
+    } else {
+      const updated = [...localWishlist, product.id];
+      localStorage.setItem("wishlist", JSON.stringify(updated));
+      setWishlist(updated);
+      showNotification(`${product.name} added to wishlist`);
     }
-    
-    // Add to cart first
-    addToCart(product, quantity, selectedVariant);
-    
-    // Then redirect to checkout
-    window.location.href = '/checkout';
-  };
-  const handleWishlistToggle = async () => {
-    if (!isLoggedIn) return setShowLoginModal(true);
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      if (wishlist.includes(product.id)) {
-        await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
-        showNotification(`${product.name} removed from wishlist`);
-      } else {
-        await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
-        showNotification(`${product.name} added to wishlist`);
-      }
-    } catch (err) {
-      console.error('Error updating wishlist:', err);
-      showNotification('Failed to update wishlist.');
+    return;
+  }
+  
+  // ✅ For logged-in users: use Firebase
+  try {
+    const userRef = doc(db, 'users', user.uid);
+    if (wishlist.includes(product.id)) {
+      await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
+      showNotification(`${product.name} removed from wishlist`);
+    } else {
+      await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
+      showNotification(`${product.name} added to wishlist`);
     }
-  };
+  } catch (err) {
+    console.error('Error updating wishlist:', err);
+    showNotification('Failed to update wishlist.');
+  }
+};
 
   const handleCommentChange = (e) => {
     const text = e.target.value;
@@ -275,11 +325,11 @@ const ProductDetailPage = () => {
   const displayPrice = selectedVariant?.discountPrice ?? selectedVariant?.price ?? product.price;
   const originalPrice = selectedVariant?.price ?? product.originalPrice;
   const stockStatus = product.inStock ? "in" : "out";
-
+console.log('Full product object:', JSON.stringify(product, null, 2));
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {notification && (
-        <div className="fixed top-20 right-4 z-[100] bg-green-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-lg animate-pulse text-sm sm:text-base max-w-[90vw]">
+        <div className="fixed top-20 right-4 z-[9999] bg-green-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-lg animate-pulse text-sm sm:text-base max-w-[90vw]">
           {notification}
         </div>
       )}
@@ -433,7 +483,7 @@ const ProductDetailPage = () => {
   </button>
               <button 
                 onClick={handleWishlistToggle} 
-                className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 flex-shrink-0"
+                className="p-2 sm:p-3  rounded-lg  flex-shrink-0"
               >
                 <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}/>
               </button>

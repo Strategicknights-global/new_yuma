@@ -8,7 +8,6 @@ import React, {
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-
 import {
   doc,
   collection,
@@ -38,136 +37,9 @@ const getDiscountPercentage = (product) => {
   return 0;
 };
 
-
-/* ----------------------- ProductCard ------------------------ */
-/* ProductCard is a separate component so hooks can be used inside safely */
-// function ProductCard({ product, categories, wishlist, onToggleWishlist, onAddToCart, navigate, showNotification }) {
-//   const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0] || null);
-//   const [showOverlay, setShowOverlay] = useState(false);
-//   const buttonRef = useRef(null);
-
-//   const price = selectedVariant?.discountPrice ?? selectedVariant?.price ?? getProductPrice(product);
-//   const discountPercentage = getDiscountPercentage(product);
-//   const isInStock = product.inStock !== false;
-
-//   return (
-//     <div className="max-w-[250px] w-full mx-auto">
-//       <div className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-//         <img
-//           src={product.images?.[0]}
-//           alt={product.name}
-//           onClick={() => navigate(`/products/${product.id}`)}
-//           className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
-//         />
-
-//         <div className="absolute top-2 left-2 flex flex-row gap-1 z-10">
-//           {discountPercentage > 0 && (
-//             <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1">
-//               <Tag size={12} />
-//               <span>{Math.round(discountPercentage)}% OFF</span>
-//             </div>
-//           )}
-//         </div>
-
-//         <button
-//           onClick={(e) => onToggleWishlist(product, e)}
-//           className="absolute top-2 right-2 bg-white/90 p-2 rounded-full hover:bg-white hover:scale-110 transition duration-300 shadow-md"
-//         >
-//           <Heart
-//             className={`w-5 h-5 transition-all duration-200 ${
-//               wishlist.includes(product.id)
-//                 ? "fill-red-500 text-red-500"
-//                 : "text-gray-600 hover:text-red-500"
-//             }`}
-//           />
-//         </button>
-
-//         {!isInStock && (
-//           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
-//             <div className="bg-black/90 text-white px-6 py-3 rounded-lg text-sm font-bold">
-//               OUT OF STOCK
-//             </div>
-//           </div>
-//         )}
-
-//         <button
-//           onClick={(e) => {
-//             e.stopPropagation();
-//             setShowOverlay(true);
-//           }}
-//           className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black text-white font-semibold px-5 py-2 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 duration-300 whitespace-nowrap"
-//         >
-//           Choose Options
-//         </button>
-
-//         {showOverlay && (
-//           <div
-//             className="absolute inset-0 bg-white z-[50] flex flex-col p-4 overflow-y-auto"
-//             onClick={(e) => e.stopPropagation()}
-//           >
-//             <button
-//               onClick={() => setShowOverlay(false)}
-//               className="absolute top-2 right-2 bg-gray-100 p-2 rounded-full hover:bg-gray-200"
-//             >
-//               ✕
-//             </button>
-
-//             <h2 className="text-lg font-semibold pr-10">{product.name}</h2>
-
-//             <div className="flex items-center gap-2 my-3">
-//               <span className="text-red-600 font-bold text-lg">₹{price}</span>
-//               {selectedVariant?.discountPrice && (
-//                 <span className="text-sm line-through text-gray-400">₹{product.variants?.[0]?.price ?? product.originalPrice}</span>
-//               )}
-//             </div>
-
-//             {product.variants?.length > 0 && (
-//               <>
-//                 <p className="text-sm text-gray-600 mb-2">Choose weight:</p>
-//                 <div className="flex flex-wrap gap-2 mb-4">
-//                   {product.variants.map((v, index) => (
-//                     <button
-//                       key={index}
-//                       onClick={() => setSelectedVariant(v)}
-//                       className={`px-3 py-1.5 text-sm rounded-lg border ${
-//                         selectedVariant === v ? "bg-black text-white" : "bg-white text-gray-700 border-gray-300"
-//                       }`}
-//                     >
-//                       {v.weight || v.size || `Variant ${index + 1}`}
-//                     </button>
-//                   ))}
-//                 </div>
-//               </>
-//             )}
-
-//             <button
-//               ref={buttonRef}
-//               onClick={() => onAddToCart({ ...product, selectedVariant }, buttonRef, () => setShowOverlay(false))}
-//               disabled={!isInStock}
-//               className="w-full bg-black text-white py-2.5 rounded-lg font-semibold mb-3 transition-transform duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
-//             >
-//               {isInStock ? "Add to Cart" : "Out of Stock"}
-//             </button>
-
-//             <p onClick={() => { navigate(`/products/${product.id}`); }} className="text-center text-sm text-gray-700 underline cursor-pointer">View full details</p>
-//           </div>
-//         )}
-//       </div>
-
-//       <div onClick={() => navigate(`/products/${product.id}`)} className="pt-3 text-center cursor-pointer">
-//         <h3 className="text-sm font-semibold line-clamp-1 text-gray-800">{product.name}</h3>
-//         <div className="flex justify-center items-center gap-2 mt-1">
-//           <span className="text-lg font-bold text-[#b85a00]">₹{price}</span>
-//           {selectedVariant?.discountPrice && <span className="text-sm line-through text-gray-400">₹{product.variants?.[0]?.price ?? product.originalPrice}</span>}
-//         </div>
-//           <p onClick={() => { navigate(`/products/${product.id}`); }} className="text-center text-sm text-gray-700 underline cursor-pointer">View full details</p>
-//       </div>
-//     </div>
-//   );
-// }
-
 /* -------------------- PopularProducts main -------------------- */
 const ProductCard = lazy(() => import("./ProductCard"));
+
 const PopularProducts = ({ products = [], categories = [] }) => {
   // states
   const [activeCategory, setActiveCategory] = useState("All");
@@ -181,7 +53,8 @@ const PopularProducts = ({ products = [], categories = [] }) => {
   const { user, isLoggedIn } = useAuth();
 
   const [searchParams] = useSearchParams();
-const [showComingSoon, setShowComingSoon] = useState(true);
+  const [showComingSoon, setShowComingSoon] = useState(true);
+
   useEffect(() => {
     // read ?category=... and ?goal=...
     const urlCategory = searchParams.get("category");
@@ -197,12 +70,16 @@ const [showComingSoon, setShowComingSoon] = useState(true);
     }
   }, [searchParams]);
 
-  // wishlist live-updates
+  // ✅ UPDATED: wishlist live-updates with localStorage support
   useEffect(() => {
     if (!user) {
-      setWishlist([]);
+      // ✅ Load from localStorage for non-logged-in users
+      const localWishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      setWishlist(localWishlist);
       return;
     }
+    
+    // ✅ For logged-in users: Firebase real-time listener
     const userRef = doc(db, "users", user.uid);
     const unsub = onSnapshot(userRef, (snap) => {
       if (snap.exists()) setWishlist(snap.data().wishlist || []);
@@ -225,33 +102,40 @@ const [showComingSoon, setShowComingSoon] = useState(true);
     setNotification(msg);
     setTimeout(() => setNotification(""), 2500);
   };
-// useEffect(() => {
-//   const savedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-//   setWishlist(savedWishlist);
-// }, []);
-// useEffect(() => {
-//   localStorage.setItem("wishlist", JSON.stringify(wishlist));
-// }, [wishlist]);
 
-const handleWishlistToggle = async (product, e) => {
-  e?.stopPropagation();
+  // ✅ UPDATED: handleWishlistToggle with localStorage support
+  const handleWishlistToggle = async (product, e) => {
+    e?.stopPropagation();
 
-  if (!user) {
-    showNotification("Login to save wishlist");
-    return;
-  }
+    if (!user) {
+      // ✅ For non-logged-in users: use localStorage
+      const localWishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      
+      if (localWishlist.includes(product.id)) {
+        const updated = localWishlist.filter(id => id !== product.id);
+        localStorage.setItem("wishlist", JSON.stringify(updated));
+        setWishlist(updated);
+        showNotification(`${product.name} removed from wishlist`);
+      } else {
+        const updated = [...localWishlist, product.id];
+        localStorage.setItem("wishlist", JSON.stringify(updated));
+        setWishlist(updated);
+        showNotification(`${product.name} added to wishlist`);
+      }
+      return;
+    }
 
-  const userRef = doc(db, "users", user.uid);
+    // ✅ For logged-in users: use Firebase
+    const userRef = doc(db, "users", user.uid);
 
-  if (wishlist.includes(product.id)) {
-    await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
-    showNotification(`${product.name} removed from wishlist`);
-  } else {
-    await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
-    showNotification(`${product.name} added to wishlist`);
-  }
-};
-
+    if (wishlist.includes(product.id)) {
+      await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
+      showNotification(`${product.name} removed from wishlist`);
+    } else {
+      await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
+      showNotification(`${product.name} added to wishlist`);
+    }
+  };
 
   const handleAddToCart = (product, buttonRef, closeOverlay = null) => {
     if (!product.inStock) {
@@ -306,6 +190,7 @@ const handleWishlistToggle = async (product, e) => {
 
     return false;
   });
+
   const getDiverseProducts = (products, categories) => {
     const diverse = [];
     const used = new Set();
@@ -342,6 +227,7 @@ const handleWishlistToggle = async (product, e) => {
     
     return diverse.slice(0, 4);
   };
+
   return (
     <section className="py-12 bg-white relative">
       {notification && (
@@ -380,49 +266,48 @@ const handleWishlistToggle = async (product, e) => {
         {/* products grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16">
-           <p className="text-3xl text-[#57ba40] font-semibold flex items-center gap-2 justify-center">
-  Coming Soon
-  <span className="inline-flex gap-1">
-    <span className="animate-bounce" style={{ animationDelay: '0s' }}>.</span>
-    <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
-    <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>.</span>
-  </span>
-</p>
-            {!showComingSoon  && (
-    <button 
-      onClick={() => { setActiveGoal(null); setActiveCategory("All"); }} 
-      className="mt-4 text-[#57ba40] font-bold hover:underline"
-    >
-      Clear all filters
-    </button>
-  )}
+            <p className="text-3xl text-[#57ba40] font-semibold flex items-center gap-2 justify-center">
+              Coming Soon
+              <span className="inline-flex gap-1">
+                <span className="animate-bounce" style={{ animationDelay: '0s' }}>.</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>.</span>
+              </span>
+            </p>
+            {!showComingSoon && (
+              <button 
+                onClick={() => { setActiveGoal(null); setActiveCategory("All"); }} 
+                className="mt-4 text-[#57ba40] font-bold hover:underline"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         ) : (
-           <Suspense fallback={<div>Loading products...</div>}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:mx-50">
-            {getDiverseProducts(filteredProducts, categories).map(prod => (
-              <ProductCard
-                key={prod.id}
-                product={prod}
-                categories={categories}
-                wishlist={wishlist}
-                onToggleWishlist={handleWishlistToggle}
-                onAddToCart={handleAddToCart}
-                navigate={navigate}
-                showNotification={showNotification}
-              />
-              
-            ))}
-          </div>
+          <Suspense fallback={<div>Loading products...</div>}>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:mx-50">
+              {getDiverseProducts(filteredProducts, categories).map(prod => (
+                <ProductCard
+                  key={prod.id}
+                  product={prod}
+                  categories={categories}
+                  wishlist={wishlist}
+                  onToggleWishlist={handleWishlistToggle}
+                  onAddToCart={handleAddToCart}
+                  navigate={navigate}
+                  showNotification={showNotification}
+                />
+              ))}
+            </div>
             <div className="flex justify-center mt-6">
-    <button
-      onClick={() => navigate("/products")} 
-      className="px-6 py-2 bg-[#00a63e] text-white rounded-lg text-lg font-semibold hover:bg-green-700 transition"
-    >
-      Explore More
-    </button>
-  </div>
-           </Suspense>
+              <button
+                onClick={() => navigate("/products")} 
+                className="px-6 py-2 bg-[#00a63e] text-white rounded-lg text-lg font-semibold hover:bg-green-700 transition"
+              >
+                Explore More
+              </button>
+            </div>
+          </Suspense>
         )}
       </div>
     </section>

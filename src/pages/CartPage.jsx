@@ -6,11 +6,9 @@ import { Plus, Minus, X, ChevronRight, ShoppingBag } from "lucide-react";
 import Navbar from "../components/Navbar";
 
 const CartPage = () => {
-  const { cart, updateQuantity, removeFromCart, totalCartValue, loadingCart } =
-    useCart();
+  const { cart, updateQuantity, removeFromCart, totalCartValue, loadingCart } = useCart();
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
 
   const shippingCost = 0; // Free shipping
   const deliveryFee = 10;
@@ -24,13 +22,6 @@ const CartPage = () => {
     } else {
       navigate("/checkout");
     }
-  };
-
-  const handleNewsletterSubmit = (e) => {
-    e.preventDefault();
-    // Handle newsletter subscription
-    console.log("Newsletter email:", email);
-    setEmail("");
   };
 
   if (loadingCart) {
@@ -48,9 +39,8 @@ const CartPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-gray-500 mb-6">
-          <Link to="/" className=" hover:text-[#57ba40]">Home</Link>
-          {/* <ChevronRight className="w-4 h-4 mx-2" /> */}
-           <span className="mx-2">/</span>
+          <Link to="/" className="hover:text-green-600">Home</Link>
+          <span className="mx-2">/</span>
           <span className="text-gray-900 font-medium">Cart</span>
         </div>
 
@@ -68,9 +58,13 @@ const CartPage = () => {
                   {/* Product Image */}
                   <div className="flex-shrink-0">
                     <img
-                      src={item.image}
+                      src={item.image || "https://placehold.co/96x96/e5e7eb/6b7280?text=No+Image"}
                       alt={item.name}
-                      className="w-24 h-24 rounded-lg object-cover"
+                      className="w-24 h-24 rounded-lg object-cover bg-gray-100"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://placehold.co/96x96/e5e7eb/6b7280?text=No+Image";
+                      }}
                     />
                   </div>
 
@@ -91,10 +85,9 @@ const CartPage = () => {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center bg-gray-100 rounded-full px-3 py-2">
                       <button
-                        onClick={() =>
-                          updateQuantity(item.cartKey, item.quantity - 1)
-                        }
+                        onClick={() => updateQuantity(item.cartKey, item.quantity - 1)}
                         className="text-gray-600 hover:text-gray-900 p-1"
+                        disabled={item.quantity <= 1}
                       >
                         <Minus size={16} />
                       </button>
@@ -102,9 +95,7 @@ const CartPage = () => {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateQuantity(item.cartKey, item.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(item.cartKey, item.quantity + 1)}
                         className="text-gray-600 hover:text-gray-900 p-1"
                       >
                         <Plus size={16} />
@@ -115,6 +106,7 @@ const CartPage = () => {
                     <button
                       onClick={() => removeFromCart(item.cartKey)}
                       className="text-red-500 hover:text-red-600 p-2"
+                      aria-label="Remove item"
                     >
                       <X size={20} />
                     </button>
@@ -126,37 +118,27 @@ const CartPage = () => {
             {/* Order Summary - Right Column */}
             <div className="lg:col-span-1 mt-8 lg:mt-0">
               <div className="bg-white rounded-lg p-6 shadow-sm sticky top-24">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Order Summary
-                </h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="font-medium text-gray-900">
-                      ₹{totalCartValue.toFixed(2)}
-                    </span>
+                    <span className="font-medium text-gray-900">₹{totalCartValue.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Discount (-{discount}%)</span>
-                    <span className="font-medium text-red-600">
-                      -₹{discountAmount.toFixed(2)}
-                    </span>
+                    <span className="font-medium text-red-600">-₹{discountAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery Fee</span>
-                    <span className="font-medium text-gray-900">
-                      ₹{deliveryFee.toFixed(2)}
-                    </span>
+                    <span className="font-medium text-gray-900">₹{deliveryFee.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold text-gray-900">Total</span>
-                    <span className="text-2xl font-bold text-gray-900">
-                      ₹{finalTotal.toFixed(2)}
-                    </span>
+                    <span className="text-2xl font-bold text-gray-900">₹{finalTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -189,12 +171,8 @@ const CartPage = () => {
           // Empty Cart View
           <div className="text-center bg-white p-12 rounded-lg shadow-sm">
             <ShoppingBag className="mx-auto h-16 w-16 text-gray-400" />
-            <h2 className="mt-4 text-2xl font-bold text-gray-900">
-              Your cart is empty
-            </h2>
-            <p className="mt-2 text-gray-600">
-              Looks like you haven't added anything to your cart yet.
-            </p>
+            <h2 className="mt-4 text-2xl font-bold text-gray-900">Your cart is empty</h2>
+            <p className="mt-2 text-gray-600">Looks like you haven't added anything to your cart yet.</p>
             <div className="mt-6">
               <Link
                 to="/products"
@@ -206,35 +184,28 @@ const CartPage = () => {
           </div>
         )}
 
-        {/* Newsletter Section */}
+        {/* Contact Section */}
         {cart && cart.length > 0 && (
           <div className="mt-12 bg-gradient-to-r from-teal-700 to-teal-600 rounded-2xl p-8 text-white">
-  <div className="max-w-2xl">
-    <h2 className="text-2xl font-bold mb-2">
-      WE’RE HERE TO HELP YOU!
-    </h2>
-    <p className="text-teal-100 mb-6">
-      Have questions about our products, orders, or services? Reach out anytime.
-    </p>
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-bold mb-2">WE'RE HERE TO HELP YOU!</h2>
+              <p className="text-teal-100 mb-6">
+                Have questions about our products, orders, or services? Reach out anytime.
+              </p>
 
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="bg-white text-teal-700 p-3 rounded-full">
-          📞
-        </span>
-        <p className="text-lg">+91 98765 43210</p>
-      </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="bg-white text-teal-700 p-3 rounded-full">📞</span>
+                  <p className="text-lg">+91 98765 43210</p>
+                </div>
 
-      <div className="flex items-center gap-3">
-        <span className="bg-white text-teal-700 p-3 rounded-full">
-          ✉️
-        </span>
-        <p className="text-lg">support@yoursite.com</p>
-      </div>
-    </div>
-  </div>
-</div>
-
+                <div className="flex items-center gap-3">
+                  <span className="bg-white text-teal-700 p-3 rounded-full">✉️</span>
+                  <p className="text-lg">yumas.customercare@gmail.com</p>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>

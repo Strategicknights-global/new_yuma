@@ -90,7 +90,7 @@ const Navbar = () => {
   <img
     src={logo}
     alt="Yuma Foods Logo"
-    className="h-18 w-18 sm:h-10 sm:w-10 lg:h-20 lg:w-20"
+    className="h-18 w-18 sm:h-10 sm:w-10 lg:h-35 lg:w-35"
   />
 
   <span

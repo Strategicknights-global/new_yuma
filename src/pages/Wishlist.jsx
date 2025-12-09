@@ -6,6 +6,7 @@ import {
   updateDoc,
   arrayRemove,
   getDoc,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../context/AuthContext";
@@ -19,47 +20,133 @@ const Wishlist = () => {
   const [wishlistProducts, setWishlistProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Listen to wishlist changes
-  useEffect(() => {
-    if (!isLoggedIn || !user?.uid) {
-      navigate("/login?redirect=/wishlist");
-      return;
+  // ✅ Get wishlist from localStorage for non-logged-in users
+  const getLocalWishlist = () => {
+    try {
+      const stored = localStorage.getItem("wishlist");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
     }
+  };
 
-    const userRef = doc(db, "users", user.uid);
+  // ✅ Save wishlist to localStorage
+  const saveLocalWishlist = (productIds) => {
+    localStorage.setItem("wishlist", JSON.stringify(productIds));
+  };
 
-    const unsubscribe = onSnapshot(userRef, async (snap) => {
-      if (snap.exists()) {
-        const wishlist = snap.data().wishlist || [];
-
-        // fetch product details for each wishlist item
-        const productPromises = wishlist.map(async (productId) => {
-          const prodRef = doc(db, "products", productId);
-          const prodSnap = await getDoc(prodRef);
-          if (prodSnap.exists()) {
-            return { id: prodSnap.id, ...prodSnap.data() };
+  // ✅ Sync local wishlist to Firebase when user logs in
+  useEffect(() => {
+    const syncLocalToFirebase = async () => {
+      if (isLoggedIn && user?.uid) {
+        const localWishlist = getLocalWishlist();
+        if (localWishlist.length > 0) {
+          try {
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+              const existingWishlist = userSnap.data().wishlist || [];
+              // Merge local and Firebase wishlists (remove duplicates)
+              const mergedWishlist = [...new Set([...existingWishlist, ...localWishlist])];
+              
+              await updateDoc(userRef, {
+                wishlist: mergedWishlist,
+              });
+            } else {
+              // Create user document if it doesn't exist
+              await setDoc(userRef, {
+                wishlist: localWishlist,
+                email: user.email,
+              });
+            }
+            
+            // Clear local storage after syncing
+            localStorage.removeItem("wishlist");
+          } catch (err) {
+            console.error("Error syncing wishlist:", err);
           }
-          return null;
+        }
+      }
+    };
+
+    syncLocalToFirebase();
+  }, [isLoggedIn, user]);
+
+  // ✅ Listen to wishlist changes (Firebase for logged-in, localStorage for guests)
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      setLoading(true);
+
+      if (isLoggedIn && user?.uid) {
+        // ✅ For logged-in users: use Firebase realtime listener
+        const userRef = doc(db, "users", user.uid);
+
+        const unsubscribe = onSnapshot(userRef, async (snap) => {
+          if (snap.exists()) {
+            const wishlist = snap.data().wishlist || [];
+
+            // Fetch product details for each wishlist item
+            const productPromises = wishlist.map(async (productId) => {
+              const prodRef = doc(db, "products", productId);
+              const prodSnap = await getDoc(prodRef);
+              if (prodSnap.exists()) {
+                return { id: prodSnap.id, ...prodSnap.data() };
+              }
+              return null;
+            });
+
+            const products = (await Promise.all(productPromises)).filter(Boolean);
+            setWishlistProducts(products);
+          } else {
+            setWishlistProducts([]);
+          }
+          setLoading(false);
         });
 
-        const products = (await Promise.all(productPromises)).filter(Boolean);
-        setWishlistProducts(products);
+        return () => unsubscribe();
       } else {
-        setWishlistProducts([]);
+        // ✅ For guest users: use localStorage
+        const localWishlist = getLocalWishlist();
+
+        if (localWishlist.length > 0) {
+          const productPromises = localWishlist.map(async (productId) => {
+            const prodRef = doc(db, "products", productId);
+            const prodSnap = await getDoc(prodRef);
+            if (prodSnap.exists()) {
+              return { id: prodSnap.id, ...prodSnap.data() };
+            }
+            return null;
+          });
+
+          const products = (await Promise.all(productPromises)).filter(Boolean);
+          setWishlistProducts(products);
+        }
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
-  }, [user, isLoggedIn, navigate]);
+    fetchWishlist();
+  }, [user, isLoggedIn]);
 
-  // remove from wishlist
+  // ✅ Remove from wishlist (works for both logged-in and guest users)
   const handleRemoveFromWishlist = async (productId) => {
     try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        wishlist: arrayRemove(productId),
-      });
+      if (isLoggedIn && user?.uid) {
+        // Remove from Firebase
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          wishlist: arrayRemove(productId),
+        });
+      } else {
+        // Remove from localStorage
+        const localWishlist = getLocalWishlist();
+        const updatedWishlist = localWishlist.filter((id) => id !== productId);
+        saveLocalWishlist(updatedWishlist);
+        
+        // Update UI immediately
+        setWishlistProducts((prev) => prev.filter((p) => p.id !== productId));
+      }
     } catch (err) {
       console.error("Error removing from wishlist:", err);
     }
@@ -93,12 +180,20 @@ const Wishlist = () => {
             <Heart className="w-8 h-8 text-gray-800" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900">My Wishlist</h1>
+          {!isLoggedIn && (
+            <p className="text-sm text-gray-600 mt-2">
+              <Link to="/login" className="text-[#57ba40] hover:underline">
+                Sign in
+              </Link>{" "}
+              to save your wishlist permanently
+            </p>
+          )}
         </div>
 
         {wishlistProducts.length > 0 ? (
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 bg-gray-50 border-b border-gray-200 px-6 py-4 font-semibold text-gray-700 text-sm">
+            <div className="hidden md:grid grid-cols-12 gap-4 bg-gray-50 border-b border-gray-200 px-6 py-4 font-semibold text-gray-700 text-sm">
               <div className="col-span-1"></div>
               <div className="col-span-4">Product name</div>
               <div className="col-span-2 text-center">Unit price</div>
@@ -120,10 +215,10 @@ const Wishlist = () => {
               return (
                 <div
                   key={p.id}
-                  className="grid grid-cols-12 gap-4 px-6 py-6 border-b border-gray-200 hover:bg-gray-50 transition-colors items-center"
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-6 border-b border-gray-200 hover:bg-gray-50 transition-colors items-center"
                 >
                   {/* Remove Button */}
-                  <div className="col-span-1 flex justify-center">
+                  <div className="md:col-span-1 flex justify-end md:justify-center absolute top-2 right-2 md:relative md:top-auto md:right-auto">
                     <button
                       onClick={() => handleRemoveFromWishlist(p.id)}
                       className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-full transition-colors"
@@ -134,7 +229,7 @@ const Wishlist = () => {
                   </div>
 
                   {/* Product Image and Name */}
-                  <div className="col-span-4 flex items-center gap-4">
+                  <div className="md:col-span-4 flex items-center gap-4">
                     <Link to={`/products/${p.id}`}>
                       <img
                         src={p.images?.[0]}
@@ -151,7 +246,7 @@ const Wishlist = () => {
                   </div>
 
                   {/* Unit Price */}
-                  <div className="col-span-2 text-center">
+                  <div className="md:col-span-2 text-left md:text-center">
                     {hasDiscount && (
                       <div className="text-gray-400 line-through text-sm">
                         ₹{originalPrice}
@@ -163,12 +258,12 @@ const Wishlist = () => {
                   </div>
 
                   {/* Stock Status */}
-                  <div className="col-span-2 text-center">
+                  <div className="md:col-span-2 text-left md:text-center">
                     <span className="text-green-600 font-medium">In Stock</span>
                   </div>
 
                   {/* Add to Cart Button and Date */}
-                  <div className="col-span-3 flex flex-col items-end gap-2">
+                  <div className="md:col-span-3 flex flex-col items-start md:items-end gap-2">
                     <div className="text-xs text-gray-500">
                       Added on: {new Date().toLocaleDateString('en-US', { 
                         month: 'long', 
