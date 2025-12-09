@@ -66,7 +66,7 @@ const ProfilePage = () => {
       const { latitude, longitude } = pos.coords;
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+         `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
         );
         const data = await res.json();
         setAddress(data.display_name || "");
