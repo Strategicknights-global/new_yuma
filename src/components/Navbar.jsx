@@ -27,12 +27,29 @@ const Navbar = () => {
 
   const isHomePage = location.pathname === "/";
 
-  // Handle scroll only on home page
+  // ✅ FIXED: Handle scroll properly
   useEffect(() => {
-    if (!isHomePage) return;
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    if (!isHomePage) {
+      // Non-home pages: always show white navbar
+      setScrolled(true);
+      return;
+    }
+
+    // Home page: detect scroll and update navbar
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+      setScrolled(currentScrollY > 10);
+    };
+
+    // Check initial scroll position
+    handleScroll();
+
+    // Add scroll listener
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [isHomePage]);
 
   const handleSearch = (e) => {
@@ -79,28 +96,27 @@ const Navbar = () => {
   } else {
     // Other pages: normal flow, not overlay
     navbarClasses += " relative bg-white shadow-md";
-    navPositionStyles = { marginTop: `${OFFER_BAR_HEIGHT}px` }; // pushes navbar below banner
+    navPositionStyles = { marginTop: `${OFFER_BAR_HEIGHT}px` };
   }
 
   return (
     <nav style={navPositionStyles} className={navbarClasses}>
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         {/* Logo */}
-       <Link to="/" className="flex items-center space-x-2">
-  <img
-    src={logo}
-    alt="Yuma Foods Logo"
-    className="h-18 w-18 sm:h-10 sm:w-10 lg:h-35 lg:w-35"
-  />
+        <Link to="/" className="flex items-center space-x-2">
+          <img
+            src={logo}
+            alt="Yuma Foods Logo"
+            className="h-18 w-18 sm:h-10 sm:w-10 lg:h-30 lg:w-30"
+          />
 
-  <span
-    className={`text-[18px] sm:text-xl lg:text-3xl font-bold ${textColor}`}
-    style={{ fontFamily: "'Baloo 2', cursive" }}
-  >
-    Yuma's Fresh Foods
-  </span>
-</Link>
-
+          <span
+            className={`text-[18px] sm:text-xl lg:text-3xl font-bold ${textColor}`}
+            style={{ fontFamily: "'Baloo 2', cursive" }}
+          >
+            Yuma's Fresh Foods
+          </span>
+        </Link>
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center space-x-6">
@@ -121,8 +137,6 @@ const Navbar = () => {
 
         {/* Right actions */}
         <div className="hidden md:flex items-center space-x-4">
-        
-
           <form
             onSubmit={handleSearch}
             className={`flex items-center rounded-md overflow-hidden ${
@@ -258,24 +272,24 @@ const Navbar = () => {
       {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-white z-[2000] md:hidden overflow-y-auto p-6">
-            <button
-      onClick={() => setIsMobileMenuOpen(false)}
-      className="absolute top-6 right-6 text-gray-800 z-[3000]"
-    >
-      <svg
-        className="w-7 h-7"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M6 18L18 6M6 6l12 12"
-        />
-      </svg>
-    </button>
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute top-6 right-6 text-gray-800 z-[3000]"
+          >
+            <svg
+              className="w-7 h-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
 
           <form onSubmit={handleSearch} className="flex px-6 mb-4 pt-20">
             <input
@@ -293,7 +307,6 @@ const Navbar = () => {
             </button>
           </form>
           <div className="flex flex-col px-6 space-y-5 text-lg font-medium">
-            {/* Top Navigation Links */}
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -305,7 +318,6 @@ const Navbar = () => {
               </Link>
             ))}
 
-            {/* Wishlist */}
             <Link
               to="/wishlist"
               className="py-2 text-gray-800 hover:text-red-600 border-b border-gray-200"
@@ -314,7 +326,6 @@ const Navbar = () => {
               Wishlist
             </Link>
 
-            {/* User Logged In */}
             {user ? (
               <>
                 <Link
@@ -322,7 +333,7 @@ const Navbar = () => {
                   className="py-2 text-gray-800 hover:text-red-600 border-b border-gray-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                 Profile
+                  Profile
                 </Link>
 
                 <Link
@@ -330,7 +341,7 @@ const Navbar = () => {
                   className="py-2 text-gray-800 hover:text-red-600 border-b border-gray-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                   My Orders
+                  My Orders
                 </Link>
 
                 <button

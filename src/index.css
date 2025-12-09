@@ -51,9 +51,12 @@
   background-size: 200% 200%;
   animation: gradient-move 3s ease infinite;
 }
-html, body {
+/* html, body {
   overflow-x: hidden !important;
    scroll-behavior: auto !important;
-  overscroll-behavior: none;
-}
-
+  
+} */
+/* #root {
+  overflow-x: hidden;
+  width: 100%;
+} */

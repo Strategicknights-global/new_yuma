@@ -5,7 +5,7 @@ const offers = [
   {
     text: (
       <>
-      <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">20% OFF</span> <span className="font-['poppins'] font-bold text-[#000000] ">Your First Order! Use Code</span><span style={{color:"#ffffff",fontStyle:"bold",marginLeft:"4px"}}>FIRST20</span>
+      <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">20% OFF ON</span> <span className="font-['poppins'] font-bold text-[#000000] ">Your First Order! Use Code</span><span style={{color:"#ffffff",fontStyle:"bold",marginLeft:"4px"}}>FIRST20</span>
       </>
     ),
     link: "/products?offer=FIRST20",
