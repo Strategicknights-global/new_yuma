@@ -135,15 +135,6 @@ const CartPage = () => {
               <div className="bg-white rounded-lg p-6 shadow-sm sticky top-24">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
-                <div className="space-y-3 mb-6">
-  
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                        <span>Discount</span>
-                        <span className="font-medium">-₹{discountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
-                </div>
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
                   <div className="flex justify-between items-center">

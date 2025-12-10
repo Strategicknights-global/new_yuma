@@ -41,14 +41,15 @@ const CheckoutPage = () => {
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
 
-  // Calculate shipping cost based on state and subtotal
+  // Calculate shipping cost based on state and subtotal AFTER discount
   const calculateShippingCost = () => {
     const state = shippingDetails.state;
-    const subtotal = totalCartValue;
+    // Calculate subtotal after discount is applied
+    const subtotalAfterDiscount = Math.max(0, totalCartValue - discountAmount);
 
     if (state === "Karnataka") {
       // Karnataka: ₹50 if below ₹499, Free if ₹499 or above
-      if (subtotal < 499) {
+      if (subtotalAfterDiscount < 499) {
         return 50;
       } else {
         return 0;
@@ -56,9 +57,9 @@ const CheckoutPage = () => {
     } else if (state) {
       // Other States: ₹100 if below ₹499, Free if ₹899 or above
       // Between ₹499-₹898: ₹100
-      if (subtotal < 499) {
+      if (subtotalAfterDiscount < 499) {
         return 100;
-      } else if (subtotal >= 899) {
+      } else if (subtotalAfterDiscount >= 899) {
         return 0;
       } else {
         return 100;
@@ -69,7 +70,7 @@ const CheckoutPage = () => {
   };
 
   const shippingCost = calculateShippingCost();
-  const finalTotal = Math.max(0, totalCartValue + shippingCost - discountAmount);
+  const finalTotal = Math.max(0, totalCartValue - discountAmount + shippingCost);
 
   const handleApplyCoupon = async () => {
       if (!couponCodeInput.trim()) return;
@@ -301,28 +302,29 @@ const CheckoutPage = () => {
     }
   };
 
-  // Get shipping message based on state and subtotal
+  // Get shipping message based on state and subtotal after discount
   const getShippingMessage = () => {
     const state = shippingDetails.state;
-    const subtotal = totalCartValue;
+    // Use subtotal after discount
+    const subtotalAfterDiscount = Math.max(0, totalCartValue - discountAmount);
 
     if (!state) {
       return "Select a state to calculate shipping";
     }
 
     if (state === "Karnataka") {
-      if (subtotal < 499) {
-        const remaining = 499 - subtotal;
+      if (subtotalAfterDiscount < 499) {
+        const remaining = 499 - subtotalAfterDiscount;
         return `Add ₹${remaining.toFixed(2)} more for free shipping in Karnataka`;
       } else {
         return "Free shipping in Karnataka!";
       }
     } else {
-      if (subtotal < 499) {
-        const remaining = 499 - subtotal;
+      if (subtotalAfterDiscount < 499) {
+        const remaining = 499 - subtotalAfterDiscount;
         return `Add ₹${remaining.toFixed(2)} more to reduce shipping cost`;
-      } else if (subtotal < 899) {
-        const remaining = 899 - subtotal;
+      } else if (subtotalAfterDiscount < 899) {
+        const remaining = 899 - subtotalAfterDiscount;
         return `Add ₹${remaining.toFixed(2)} more for free shipping`;
       } else {
         return "Free shipping!";
@@ -556,8 +558,6 @@ const CheckoutPage = () => {
                 </div>
               </div>
             </div>
-
-            {/* Shipping Method - Removed since it's now auto-calculated */}
           </div>
 
           {/* Right Column - Order Summary */}
@@ -642,18 +642,18 @@ const CheckoutPage = () => {
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium text-gray-900">₹{totalCartValue.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className={`font-medium ${shippingCost === 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                    {shippingCost === 0 ? "Free" : `₹${shippingCost.toFixed(2)}`}
-                  </span>
-                </div>
                 {discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
                     <span>Discount</span>
                     <span className="font-medium">-₹{discountAmount.toFixed(2)}</span>
                     </div>
                 )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Shipping</span>
+                  <span className={`font-medium ${shippingCost === 0 ? 'text-green-600' : 'text-gray-900'}`}>
+                    {shippingCost === 0 ? "Free" : `₹${shippingCost.toFixed(2)}`}
+                  </span>
+                </div>
               </div>
 
               {/* Total */}
