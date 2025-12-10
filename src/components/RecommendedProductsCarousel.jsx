@@ -1,24 +1,57 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Heart, Tag } from "lucide-react";
 
-const RecommendedProductsCarousel = ({ recommendedProducts, onToggleWishlist, wishlist, onAddToCart }) => {
+const RecommendedProductsCarousel = ({ recommendedProducts, onAddToCart }) => {
   const containerRef = useRef(null);
   const navigate = useNavigate();
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  // Scroll distance based on screen size
+  // Wishlist state
+  const [localWishlist, setLocalWishlist] = useState([]);
+  const [notification, setNotification] = useState("");
+
+  // Load wishlist from localStorage on mount
+  useEffect(() => {
+    const storedWishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    setLocalWishlist(storedWishlist);
+  }, []);
+
+  // ⭐ Show inline notification
+  const showNotification = (msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(""), 2500);
+  };
+
+  // Wishlist toggle handler
+  const handleWishlistToggle = (product) => {
+    setLocalWishlist((prev) => {
+      let updated;
+      if (prev.includes(product.id)) {
+        updated = prev.filter((id) => id !== product.id);
+        showNotification(`${product.name} removed from wishlist`);
+      } else {
+        updated = [...prev, product.id];
+        showNotification(`${product.name} added to wishlist`);
+      }
+
+      localStorage.setItem("wishlist", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const getScrollBy = () => {
-    if (window.innerWidth < 640) return 180; // Mobile
-    if (window.innerWidth < 1024) return 220; // Tablet
-    return 260; // Desktop
+    if (window.innerWidth < 640) return 180;
+    if (window.innerWidth < 1024) return 220;
+    return 260;
   };
 
   const handleScroll = (direction) => {
     if (!containerRef.current) return;
 
     const scrollBy = getScrollBy();
-    const maxScroll = containerRef.current.scrollWidth - containerRef.current.clientWidth;
+    const maxScroll =
+      containerRef.current.scrollWidth - containerRef.current.clientWidth;
 
     let newPosition =
       direction === "left"
@@ -35,7 +68,14 @@ const RecommendedProductsCarousel = ({ recommendedProducts, onToggleWishlist, wi
 
   return (
     <div className="relative max-w-[450px] mx-auto sm:max-w-full">
-      {/* LEFT ARROW */}
+      {/* Notification */}
+      {notification && (
+        <div className="fixed top-20 right-4 z-[9999] bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fadeIn">
+          {notification}
+        </div>
+      )}
+
+      {/* Left Arrow */}
       <button
         onClick={() => handleScroll("left")}
         className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full shadow-md p-2 hover:bg-gray-100 transition-all ${
@@ -45,7 +85,7 @@ const RecommendedProductsCarousel = ({ recommendedProducts, onToggleWishlist, wi
         <ChevronLeft className="w-5 h-5" />
       </button>
 
-      {/* RIGHT ARROW */}
+      {/* Right Arrow */}
       <button
         onClick={() => handleScroll("right")}
         className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full shadow-md p-2 hover:bg-gray-100 transition-all"
@@ -53,7 +93,7 @@ const RecommendedProductsCarousel = ({ recommendedProducts, onToggleWishlist, wi
         <ChevronRight className="w-5 h-5" />
       </button>
 
-      {/* HORIZONTAL SCROLLER */}
+      {/* Horizontal Scroller */}
       <div
         ref={containerRef}
         className="flex overflow-x-auto scroll-smooth gap-3 px-3 sm:px-10 pb-2 snap-x snap-mandatory scrollbar-hide"
@@ -67,15 +107,15 @@ const RecommendedProductsCarousel = ({ recommendedProducts, onToggleWishlist, wi
           <ProductCard
             key={product.id}
             product={product}
-            wishlist={wishlist}
-            onToggleWishlist={onToggleWishlist}
+            isWishlisted={localWishlist.includes(product.id)}
+            onToggleWishlist={handleWishlistToggle}
             onAddToCart={onAddToCart}
             navigate={navigate}
           />
         ))}
       </div>
 
-      {/* MOBILE DOTS */}
+      {/* Mobile dots */}
       <div className="flex justify-center gap-1.5 mt-3 sm:hidden">
         {recommendedProducts.slice(0, 5).map((_, index) => (
           <div key={index} className="w-1.5 h-1.5 rounded-full bg-gray-300" />
@@ -85,25 +125,20 @@ const RecommendedProductsCarousel = ({ recommendedProducts, onToggleWishlist, wi
   );
 };
 
-
 // =========================
 // Product Card Component
 // =========================
-
-function ProductCard({ product, wishlist, onToggleWishlist, onAddToCart, navigate }) {
+function ProductCard({ product, isWishlisted, onToggleWishlist, onAddToCart, navigate }) {
   const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0] || null);
-  const buttonRef = useRef(null);
 
-  const price = selectedVariant?.discountPrice ?? selectedVariant?.price ?? product.price;
+  const price =
+    selectedVariant?.discountPrice ?? selectedVariant?.price ?? product.price;
   const originalPrice = selectedVariant?.price ?? product.originalPrice;
   const discountPercentage = selectedVariant?.discountPercentage || 0;
-  const isInStock = product.inStock !== false;
-  const isWishlisted = wishlist?.includes(product.id);
 
   return (
     <div className="flex-shrink-0 w-40 sm:w-48 md:w-56 snap-start">
       <div className="relative group rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all">
-        
         {/* Product Image */}
         <img
           src={product.images?.[0] || "https://via.placeholder.com/150"}
@@ -125,17 +160,14 @@ function ProductCard({ product, wishlist, onToggleWishlist, onAddToCart, navigat
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onToggleWishlist?.(product);
+            onToggleWishlist(product);
           }}
           className="absolute top-2 right-2 bg-white/90 p-2 rounded-full shadow transition hover:bg-white"
         >
           <Heart
-            className={`w-5 h-5 ${
-              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
-            }`}
+            className={`w-5 h-5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
           />
         </button>
-
       </div>
 
       {/* Product Info */}
@@ -143,9 +175,7 @@ function ProductCard({ product, wishlist, onToggleWishlist, onAddToCart, navigat
         onClick={() => navigate(`/products/${product.id}`)}
         className="pt-3 text-center cursor-pointer"
       >
-        <h3 className="text-sm font-semibold text-gray-800 line-clamp-1">
-          {product.name}
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-800 line-clamp-1">{product.name}</h3>
 
         <div className="flex justify-center gap-2 items-center mt-1">
           <span className="text-lg font-bold text-[#b85a00]">₹{price}</span>

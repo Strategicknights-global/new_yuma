@@ -275,6 +275,24 @@ const handleWishlistToggle = async () => {
     showNotification('Failed to update wishlist.');
   }
 };
+// const handleRecommendedWishlistToggle = (productId) => {
+//   setWishlist((prev) => {
+//     if (prev.includes(productId)) {
+//       return prev.filter((id) => id !== productId);
+//     } else {
+//       return [...prev, productId];
+//     }
+//   });
+
+//   setRecommendedProducts((prev) =>
+//     prev.map((item) =>
+//       item.id === productId
+//         ? { ...item, isWishlisted: !item.isWishlisted }
+//         : item
+//     )
+//   );
+// };
+
 
   const handleCommentChange = (e) => {
     const text = e.target.value;
@@ -652,8 +670,6 @@ console.log('Full product object:', JSON.stringify(product, null, 2));
             <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 text-center">You Might Also Like</h2>
             <RecommendedProductsCarousel 
               recommendedProducts={recommendedProducts}
-              onToggleWishlist={handleWishlistToggle}
-              wishlist={wishlist}
             />
           </div>
         )}
