@@ -486,7 +486,8 @@ const AuthPage = () => {
       }
       navigate('/');
     } catch (err) {
-      setError("Google Sign-In failed.");
+      console.error("Google Sign-In Error:", err);
+      setError(`Google Sign-In failed: ${err.message}`);
     } finally {
       setLoading(false);
     }
