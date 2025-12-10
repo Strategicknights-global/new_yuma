@@ -348,10 +348,10 @@ const PopularProducts = ({ products = [], categories = [] }) => {
           <h2 className="font-['Poppins'] text-5xl md:text-6xl text-[#07602e]">
             {activeGoal ? `Shop for ${goals.find(g => g.id === activeGoal)?.name ?? activeGoal}` : "Popular Products"}
           </h2>
-          <div className="text-xs text-gray-500 mt-2">
+          {/* <div className="text-xs text-gray-500 mt-2">
             Debug: {user ? `Logged in as ${user.uid.slice(0, 8)}...` : "Not logged in"} | 
             Wishlist items: {wishlist.length}
-          </div>
+          </div> */}
         </div>
 
         {/* category buttons */}
