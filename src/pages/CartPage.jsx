@@ -6,15 +6,30 @@ import { Plus, Minus, X, ChevronRight, ShoppingBag } from "lucide-react";
 import Navbar from "../components/Navbar";
 
 const CartPage = () => {
-  const { cart, updateQuantity, removeFromCart, totalCartValue, loadingCart } = useCart();
+  const { cart, updateQuantity, removeFromCart, totalCartValue, loadingCart, appliedCoupon, discountAmount, applyCoupon, removeCoupon } = useCart();
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState("");
+
   const shippingCost = 0; // Free shipping
-  // const deliveryFee = 10;
-  // const discount = 25; // 25% discount
-  // const discountAmount = (totalCartValue * discount) / 100;
-  const finalTotal = totalCartValue ;
+  const finalTotal = Math.max(0, totalCartValue - discountAmount);
+
+  const handleApplyCoupon = async () => {
+      if (!couponCodeInput.trim()) return;
+      setApplyingCoupon(true);
+      setCouponError("");
+      try {
+          await applyCoupon(couponCodeInput);
+          setCouponCodeInput("");
+      } catch (err) {
+          setCouponError(err.message);
+      } finally {
+          setApplyingCoupon(false);
+      }
+  };
 
   const handleCheckout = () => {
     if (!isLoggedIn || !user?.uid) {
@@ -125,14 +140,12 @@ const CartPage = () => {
                     <span>Subtotal</span>
                     <span className="font-medium text-gray-900">₹{totalCartValue.toFixed(2)}</span>
                   </div>
-                  {/* <div className="flex justify-between text-gray-600">
-                    <span>Discount (-{discount}%)</span>
-                    <span className="font-medium text-red-600">-₹{discountAmount.toFixed(2)}</span>
-                  </div> */}
-                  {/* <div className="flex justify-between text-gray-600">
-                    <span>Delivery Fee</span>
-                    <span className="font-medium text-gray-900">₹{deliveryFee.toFixed(2)}</span>
-                  </div> */}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                        <span>Discount</span>
+                        <span className="font-medium">-₹{discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
@@ -144,16 +157,37 @@ const CartPage = () => {
 
                 {/* Promo Code Input */}
                 <div className="mb-4">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Add promo code"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    />
-                    <button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors">
-                      Apply
-                    </button>
-                  </div>
+                  {appliedCoupon ? (
+                      <div className="flex justify-between items-center bg-green-50 p-3 rounded border border-green-200">
+                          <div>
+                              <p className="text-sm font-medium text-green-800">Coupon: {appliedCoupon.code}</p>
+                              <p className="text-xs text-green-600">
+                                  {appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}% off` : `₹${appliedCoupon.value} off`}
+                              </p>
+                          </div>
+                          <button onClick={removeCoupon} className="text-red-500 hover:text-red-700 text-sm font-medium">Remove</button>
+                      </div>
+                  ) : (
+                    <div>
+                        <div className="flex gap-2">
+                            <input
+                            type="text"
+                            value={couponCodeInput}
+                            onChange={(e) => setCouponCodeInput(e.target.value)}
+                            placeholder="Add promo code"
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            />
+                            <button 
+                                onClick={handleApplyCoupon}
+                                disabled={applyingCoupon}
+                                className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50"
+                            >
+                            {applyingCoupon ? "..." : "Apply"}
+                            </button>
+                        </div>
+                        {couponError && <p className="text-red-500 text-xs mt-2 ml-2">{couponError}</p>}
+                    </div>
+                  )}
                 </div>
 
                 {/* Checkout Button */}

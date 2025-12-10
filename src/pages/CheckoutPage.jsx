@@ -17,7 +17,7 @@ const PRODUCT_COLLECTION_NAME = "products";
 
 const CheckoutPage = () => {
   const { user, isLoggedIn } = useAuth();
-  const { cart, totalCartValue, clearCart, loadingCart } = useCart();
+  const { cart, totalCartValue, clearCart, loadingCart, appliedCoupon, discountAmount, applyCoupon, removeCoupon } = useCart();
   const navigate = useNavigate();
 
   const [shippingDetails, setShippingDetails] = useState({
@@ -35,9 +35,28 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
+  
+  // Coupon state
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState("");
 
   const shippingCost = shippingMethod === "free" ? 0 : 15;
-  const finalTotal = totalCartValue + shippingCost;
+  const finalTotal = Math.max(0, totalCartValue + shippingCost - discountAmount);
+
+  const handleApplyCoupon = async () => {
+      if (!couponCodeInput.trim()) return;
+      setApplyingCoupon(true);
+      setCouponError("");
+      try {
+          await applyCoupon(couponCodeInput);
+          setCouponCodeInput("");
+      } catch (err) {
+          setCouponError(err.message);
+      } finally {
+          setApplyingCoupon(false);
+      }
+  };
 
   useEffect(() => {
     if (!loadingCart) {
@@ -146,6 +165,8 @@ const CheckoutPage = () => {
               items: cart,
               subtotal: totalCartValue,
               shippingCost: shippingCost,
+              discountAmount: discountAmount,
+              couponCode: appliedCoupon ? appliedCoupon.code : null,
               totalAmount: finalTotal,
               shippingDetails,
               shippingMethod,
@@ -156,8 +177,23 @@ const CheckoutPage = () => {
               orderId,
             };
 
-            // Save order to Firestore
+            // Save order to Firestore and update coupon usage
             await runTransaction(db, async (transaction) => {
+              if (appliedCoupon) {
+                 const couponRef = doc(db, "coupons", appliedCoupon.id);
+                 const couponDoc = await transaction.get(couponRef);
+                 if (couponDoc.exists()) {
+                     const couponData = couponDoc.data();
+                     // Optional: Re-validate limits here for strict consistency
+                     const newUsageCount = (couponData.usageCount || 0) + 1;
+                     const newUsersRedeemed = { ...couponData.usersRedeemed, [user.uid]: (couponData.usersRedeemed?.[user.uid] || 0) + 1 };
+                     
+                     transaction.update(couponRef, { 
+                         usageCount: newUsageCount,
+                         usersRedeemed: newUsersRedeemed
+                     });
+                 }
+              }
               transaction.set(newOrderRef, orderData);
             });
 
@@ -522,12 +558,38 @@ const CheckoutPage = () => {
 
               {/* Discount Code */}
               <div className="mb-6 pb-6 border-b border-gray-200">
-                <button
-                  type="button"
-                  className="text-sm text-gray-700 hover:text-gray-900 font-medium"
-                >
-                  ⚡ Add discount code
-                </button>
+                {appliedCoupon ? (
+                    <div className="flex justify-between items-center bg-green-50 p-3 rounded border border-green-200">
+                        <div>
+                            <p className="text-sm font-medium text-green-800">Coupon: {appliedCoupon.code}</p>
+                            <p className="text-xs text-green-600">
+                                {appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}% off` : `₹${appliedCoupon.value} off`}
+                            </p>
+                        </div>
+                        <button onClick={removeCoupon} type="button" className="text-red-500 hover:text-red-700 text-sm font-medium">Remove</button>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                            <input 
+                                type="text" 
+                                value={couponCodeInput}
+                                onChange={(e) => setCouponCodeInput(e.target.value)}
+                                placeholder="Discount code"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            />
+                            <button 
+                                type="button"
+                                onClick={handleApplyCoupon}
+                                disabled={applyingCoupon}
+                                className="px-4 py-2 bg-gray-900 text-white rounded-md font-medium hover:bg-gray-800 disabled:opacity-50"
+                            >
+                                {applyingCoupon ? "..." : "Apply"}
+                            </button>
+                        </div>
+                        {couponError && <p className="text-red-500 text-xs">{couponError}</p>}
+                    </div>
+                )}
               </div>
 
               {/* Price Breakdown */}
@@ -542,6 +604,12 @@ const CheckoutPage = () => {
                     {shippingCost === 0 ? "Free" : `₹${shippingCost.toFixed(2)}`}
                   </span>
                 </div>
+                {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount</span>
+                    <span className="font-medium">-₹{discountAmount.toFixed(2)}</span>
+                    </div>
+                )}
               </div>
 
               {/* Total */}

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "./AuthContext";
 
@@ -16,6 +16,8 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [loadingCart, setLoadingCart] = useState(true);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
   useEffect(() => {
     const loadCart = async () => {
       setLoadingCart(true);
@@ -135,6 +137,70 @@ export const CartProvider = ({ children }) => {
   const totalCartItems = cart.reduce((t, i) => t + i.quantity, 0);
   const totalCartValue = cart.reduce((t, i) => t + i.price * i.quantity, 0);
 
+  // Recalculate discount whenever cart changes or coupon changes
+  useEffect(() => {
+    if (appliedCoupon) {
+      let discount = 0;
+      if (appliedCoupon.type === "percentage") {
+        discount = (totalCartValue * appliedCoupon.value) / 100;
+      } else if (appliedCoupon.type === "flat") {
+        discount = appliedCoupon.value;
+      }
+      // Ensure discount doesn't exceed total
+      if (discount > totalCartValue) discount = totalCartValue;
+      setDiscountAmount(discount);
+    } else {
+      setDiscountAmount(0);
+    }
+  }, [cart, appliedCoupon, totalCartValue]);
+
+  const applyCoupon = async (code) => {
+    if (!code) throw new Error("Please enter a coupon code");
+
+    // 1. Get coupon from Firestore
+    const couponsRef = collection(db, "coupons");
+    const q = query(couponsRef, where("code", "==", code));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      throw new Error("Invalid coupon code");
+    }
+
+    const couponDoc = querySnapshot.docs[0];
+    const coupon = couponDoc.data();
+    const now = new Date();
+
+    // 2. Validate
+    // Handle Firestore Timestamp or regular Date objects
+    const startDate = coupon.startDate?.seconds ? new Date(coupon.startDate.seconds * 1000) : new Date(coupon.startDate);
+    const endDate = coupon.endDate?.seconds ? new Date(coupon.endDate.seconds * 1000) : new Date(coupon.endDate);
+
+    if (coupon.startDate && now < startDate) {
+      throw new Error("Coupon is not yet active");
+    }
+    if (coupon.endDate && now > endDate) {
+      throw new Error("Coupon has expired");
+    }
+    if (coupon.maxRedemptions && (coupon.usageCount || 0) >= coupon.maxRedemptions) {
+      throw new Error("Coupon usage limit reached");
+    }
+
+    // Check per-user limit
+    if (user?.uid && coupon.perUserLimit) {
+      const userUsage = coupon.usersRedeemed?.[user.uid] || 0;
+      if (userUsage >= coupon.perUserLimit) {
+        throw new Error(`You have already used this coupon ${coupon.perUserLimit} times`);
+      }
+    }
+
+    setAppliedCoupon({ ...coupon, id: couponDoc.id });
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountAmount(0);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -146,6 +212,10 @@ export const CartProvider = ({ children }) => {
         totalCartItems,
         totalCartValue,
         loadingCart,
+        appliedCoupon,
+        discountAmount,
+        applyCoupon,
+        removeCoupon,
       }}
     >
       {children}
