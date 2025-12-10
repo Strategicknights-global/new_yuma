@@ -112,7 +112,7 @@ const Navbar = () => {
 
           <span
             className={`text-[18px] sm:text-xl lg:text-3xl font-bold ${textColor}`}
-            style={{ fontFamily: "'Baloo 2', cursive" }}
+            style={{ fontFamily: "'Poppins', sans-serif" }}
           >
             Yuma's Fresh Foods
           </span>
