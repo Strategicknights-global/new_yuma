@@ -141,7 +141,7 @@ const Footer = () => (
 
             {/* Phone */}
             <a
-              href="tel:+919876543210"
+              href="tel:+919663208248"
               className="text-[#ffffff] hover:text-blue-600"
             >
               <Phone size={24} />
