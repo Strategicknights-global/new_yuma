@@ -13,7 +13,15 @@ const offers = [
   {
     text: (
       <>
-        <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">FREE SHIPPING</span> <span className="text-black">on Orders Over</span><span className="text-white"> ₹500! </span>
+        <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">FREE SHIPPING</span> <span className="text-black">within <span className="text-white">Bengaluru</span> on Orders Over</span><span className="text-white"> ₹499! </span>
+      </>
+    ),
+    link: "/products?offer=FREESHIP",
+  },
+    {
+    text: (
+      <>
+        <span className="font-['Poppins'] font-sans text-[#ffffff] font-bold">FREE SHIPPING</span> <span className="text-black">within <span className="text-white">India</span> on Orders Over</span><span className="text-white"> ₹899! </span>
       </>
     ),
     link: "/products?offer=FREESHIP",

@@ -11,7 +11,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { ChevronRight, Truck, Home } from "lucide-react";
 import Navbar from "../components/Navbar";
-import { sendOrderEmails } from "../../src/utils/emailService"; // Import email service
+import { sendOrderEmails } from "../../src/utils/emailService"; 
 
 const PRODUCT_COLLECTION_NAME = "products";
 
@@ -41,7 +41,34 @@ const CheckoutPage = () => {
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
 
-  const shippingCost = shippingMethod === "free" ? 0 : 15;
+  // Calculate shipping cost based on state and subtotal
+  const calculateShippingCost = () => {
+    const state = shippingDetails.state;
+    const subtotal = totalCartValue;
+
+    if (state === "Karnataka") {
+      // Karnataka: ₹50 if below ₹499, Free if ₹499 or above
+      if (subtotal < 499) {
+        return 50;
+      } else {
+        return 0;
+      }
+    } else if (state) {
+      // Other States: ₹100 if below ₹499, Free if ₹899 or above
+      // Between ₹499-₹898: ₹100
+      if (subtotal < 499) {
+        return 100;
+      } else if (subtotal >= 899) {
+        return 0;
+      } else {
+        return 100;
+      }
+    }
+    
+    return 0; // Default if no state selected
+  };
+
+  const shippingCost = calculateShippingCost();
   const finalTotal = Math.max(0, totalCartValue + shippingCost - discountAmount);
 
   const handleApplyCoupon = async () => {
@@ -184,7 +211,6 @@ const CheckoutPage = () => {
                  const couponDoc = await transaction.get(couponRef);
                  if (couponDoc.exists()) {
                      const couponData = couponDoc.data();
-                     // Optional: Re-validate limits here for strict consistency
                      const newUsageCount = (couponData.usageCount || 0) + 1;
                      const newUsersRedeemed = { ...couponData.usersRedeemed, [user.uid]: (couponData.usersRedeemed?.[user.uid] || 0) + 1 };
                      
@@ -199,30 +225,27 @@ const CheckoutPage = () => {
 
             console.log("✅ Order saved to database");
 
-            // Send confirmation emails to customer and admin
+            // Send confirmation emails
             const emailResults = await sendOrderEmails({
               ...orderData,
-              createdAt: new Date(), // Use actual date for email formatting
+              createdAt: new Date(),
             });
 
-            // Log email results
             if (emailResults.customer.success) {
               console.log("✅ Customer confirmation email sent");
             } else {
-              console.warn("⚠️ Customer email failed (order still placed):", emailResults.customer.error);
+              console.warn("⚠️ Customer email failed:", emailResults.customer.error);
             }
 
             if (emailResults.admin.success) {
               console.log("✅ Admin notification email sent");
             } else {
-              console.warn("⚠️ Admin email failed (order still placed):", emailResults.admin.error);
+              console.warn("⚠️ Admin email failed:", emailResults.admin.error);
             }
 
-            // Clear cart
             await clearCart();
             setLoading(false);
 
-            // Show success message
             const emailNote = (emailResults.customer.success && emailResults.admin.success)
               ? "Check your email for confirmation!"
               : emailResults.customer.success
@@ -235,7 +258,6 @@ const CheckoutPage = () => {
               type: "success" 
             });
             
-            // Redirect to products page
             setTimeout(() => {
               navigate("/products", { state: { orderSuccess: true } });
             }, 3000);
@@ -276,6 +298,35 @@ const CheckoutPage = () => {
       }
       setError(errorMessage);
       setLoading(false);
+    }
+  };
+
+  // Get shipping message based on state and subtotal
+  const getShippingMessage = () => {
+    const state = shippingDetails.state;
+    const subtotal = totalCartValue;
+
+    if (!state) {
+      return "Select a state to calculate shipping";
+    }
+
+    if (state === "Karnataka") {
+      if (subtotal < 499) {
+        const remaining = 499 - subtotal;
+        return `Add ₹${remaining.toFixed(2)} more for free shipping in Karnataka`;
+      } else {
+        return "Free shipping in Karnataka!";
+      }
+    } else {
+      if (subtotal < 499) {
+        const remaining = 499 - subtotal;
+        return `Add ₹${remaining.toFixed(2)} more to reduce shipping cost`;
+      } else if (subtotal < 899) {
+        const remaining = 899 - subtotal;
+        return `Add ₹${remaining.toFixed(2)} more for free shipping`;
+      } else {
+        return "Free shipping!";
+      }
     }
   };
 
@@ -427,14 +478,52 @@ const CheckoutPage = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       State*
                     </label>
-                    <input
-                      type="text"
+
+                    <select
                       name="state"
                       required
                       value={shippingDetails.state}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    />
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    >
+                      <option value="">Select State</option>
+                      <option value="Andhra Pradesh">Andhra Pradesh</option>
+                      <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                      <option value="Assam">Assam</option>
+                      <option value="Bihar">Bihar</option>
+                      <option value="Chhattisgarh">Chhattisgarh</option>
+                      <option value="Goa">Goa</option>
+                      <option value="Gujarat">Gujarat</option>
+                      <option value="Haryana">Haryana</option>
+                      <option value="Himachal Pradesh">Himachal Pradesh</option>
+                      <option value="Jharkhand">Jharkhand</option>
+                      <option value="Karnataka">Karnataka</option>
+                      <option value="Kerala">Kerala</option>
+                      <option value="Madhya Pradesh">Madhya Pradesh</option>
+                      <option value="Maharashtra">Maharashtra</option>
+                      <option value="Manipur">Manipur</option>
+                      <option value="Meghalaya">Meghalaya</option>
+                      <option value="Mizoram">Mizoram</option>
+                      <option value="Nagaland">Nagaland</option>
+                      <option value="Odisha">Odisha</option>
+                      <option value="Punjab">Punjab</option>
+                      <option value="Rajasthan">Rajasthan</option>
+                      <option value="Sikkim">Sikkim</option>
+                      <option value="Tamil Nadu">Tamil Nadu</option>
+                      <option value="Telangana">Telangana</option>
+                      <option value="Tripura">Tripura</option>
+                      <option value="Uttar Pradesh">Uttar Pradesh</option>
+                      <option value="Uttarakhand">Uttarakhand</option>
+                      <option value="West Bengal">West Bengal</option>
+                      <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                      <option value="Chandigarh">Chandigarh</option>
+                      <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                      <option value="Delhi">Delhi</option>
+                      <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                      <option value="Ladakh">Ladakh</option>
+                      <option value="Lakshadweep">Lakshadweep</option>
+                      <option value="Puducherry">Puducherry</option>
+                    </select>
                   </div>
                 </div>
 
@@ -468,61 +557,7 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Shipping Method */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Method</h2>
-              <div className="space-y-3">
-                <div
-                  onClick={() => setShippingMethod("free")}
-                  className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    shippingMethod === "free" 
-                      ? "border-gray-900 bg-gray-50" 
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      shippingMethod === "free" ? "border-gray-900" : "border-gray-300"
-                    }`}>
-                      {shippingMethod === "free" && (
-                        <div className="w-3 h-3 rounded-full bg-gray-900"></div>
-                      )}
-                    </div>
-                    <Truck className="w-5 h-5 text-gray-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Free Shipping</p>
-                      <p className="text-sm text-gray-500">7-30 business days</p>
-                    </div>
-                  </div>
-                  <p className="font-bold text-gray-900">₹0</p>
-                </div>
-
-                <div
-                  onClick={() => setShippingMethod("express")}
-                  className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    shippingMethod === "express" 
-                      ? "border-gray-900 bg-gray-50" 
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      shippingMethod === "express" ? "border-gray-900" : "border-gray-300"
-                    }`}>
-                      {shippingMethod === "express" && (
-                        <div className="w-3 h-3 rounded-full bg-gray-900"></div>
-                      )}
-                    </div>
-                    <Home className="w-5 h-5 text-gray-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Express Shipping</p>
-                      <p className="text-sm text-gray-500">2-3 business days</p>
-                    </div>
-                  </div>
-                  <p className="font-bold text-gray-900">₹15.00</p>
-                </div>
-              </div>
-            </div>
+            {/* Shipping Method - Removed since it's now auto-calculated */}
           </div>
 
           {/* Right Column - Order Summary */}
@@ -592,6 +627,15 @@ const CheckoutPage = () => {
                 )}
               </div>
 
+              {/* Shipping Info Message */}
+              {shippingDetails.state && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-700 font-medium">
+                    {getShippingMessage()}
+                  </p>
+                </div>
+              )}
+
               {/* Price Breakdown */}
               <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
                 <div className="flex justify-between text-sm">
@@ -600,7 +644,7 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium text-gray-900">
+                  <span className={`font-medium ${shippingCost === 0 ? 'text-green-600' : 'text-gray-900'}`}>
                     {shippingCost === 0 ? "Free" : `₹${shippingCost.toFixed(2)}`}
                   </span>
                 </div>
@@ -633,6 +677,29 @@ const CheckoutPage = () => {
               >
                 {loading ? "Processing..." : "Continue to Payment"}
               </button>
+            </div>
+            
+            {/* Delivery Note */}
+            <div className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
+              <h3 className="text-md font-semibold text-gray-900 mb-2">Shipping Information:</h3>
+              <ul className="list-disc ml-6 space-y-2 text-sm text-gray-600">
+                <li>
+                  <b>Within Karnataka:</b> 
+                  <div className="mt-1">
+                    • Free shipping on orders ₹499+<br/>
+                    • ₹50 shipping for orders below ₹499<br/>
+                    • Delivery in 5–7 business days
+                  </div>
+                </li>
+                <li className="mt-2">
+                  <b>Other States:</b>
+                  <div className="mt-1">
+                    • Free shipping on orders ₹899+<br/>
+                    • ₹100 shipping for orders below ₹899<br/>
+                    • Delivery in 7–14 business days
+                  </div>
+                </li>
+              </ul>
             </div>
           </div>
         </form>
