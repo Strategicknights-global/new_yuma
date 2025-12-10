@@ -76,7 +76,7 @@ const Navbar = () => {
   };
 
   // ✅ Navbar styling
-  let navbarClasses = "w-full transition-all duration-300 z-[999]";
+  let navbarClasses = "w-full transition-all duration-300 z-[9999]";
   let navPositionStyles = {};
   let textColor = "text-gray-700";
   let iconColor = "text-gray-700";

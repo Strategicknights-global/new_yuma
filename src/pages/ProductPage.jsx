@@ -685,7 +685,7 @@ const ProductPage = () => {
       <Navbar />
 
       {notification && (
-        <div className="fixed top-20 right-4 z-[100] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
+        <div className="fixed top-20 right-4 z-[9999] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
           {notification}
         </div>
       )}

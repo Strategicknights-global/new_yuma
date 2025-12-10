@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   doc,
@@ -19,6 +19,9 @@ const Wishlist = () => {
 
   const [wishlistProducts, setWishlistProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [localWishlistIds, setLocalWishlistIds] = useState([]);
+  
+  const hasMigratedRef = useRef(false);
 
   // ✅ Get wishlist from localStorage for non-logged-in users
   const getLocalWishlist = () => {
@@ -33,48 +36,65 @@ const Wishlist = () => {
   // ✅ Save wishlist to localStorage
   const saveLocalWishlist = (productIds) => {
     localStorage.setItem("wishlist", JSON.stringify(productIds));
+    setLocalWishlistIds(productIds); // Trigger re-render
   };
 
-  // ✅ Sync local wishlist to Firebase when user logs in
+  // ✅ Sync local wishlist to Firebase when user logs in (ONE TIME ONLY)
   useEffect(() => {
     const syncLocalToFirebase = async () => {
-      if (isLoggedIn && user?.uid) {
-        const localWishlist = getLocalWishlist();
-        if (localWishlist.length > 0) {
-          try {
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
+      if (!isLoggedIn || !user?.uid || hasMigratedRef.current) return;
+
+      const localWishlist = getLocalWishlist();
+      console.log("🔄 Syncing local wishlist to Firebase:", localWishlist);
+      
+      if (localWishlist.length > 0) {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+          
+          if (userSnap.exists()) {
+            const existingWishlist = userSnap.data().wishlist || [];
+            // Merge local and Firebase wishlists (remove duplicates)
+            const mergedWishlist = [...new Set([...existingWishlist, ...localWishlist])];
             
-            if (userSnap.exists()) {
-              const existingWishlist = userSnap.data().wishlist || [];
-              // Merge local and Firebase wishlists (remove duplicates)
-              const mergedWishlist = [...new Set([...existingWishlist, ...localWishlist])];
-              
-              await updateDoc(userRef, {
-                wishlist: mergedWishlist,
-              });
-            } else {
-              // Create user document if it doesn't exist
-              await setDoc(userRef, {
-                wishlist: localWishlist,
-                email: user.email,
-              });
-            }
+            console.log("🔀 Merging wishlists:", { existingWishlist, localWishlist, mergedWishlist });
             
-            // Clear local storage after syncing
-            localStorage.removeItem("wishlist");
-          } catch (err) {
-            console.error("Error syncing wishlist:", err);
+            await setDoc(userRef, { wishlist: mergedWishlist }, { merge: true });
+          } else {
+            // Create user document if it doesn't exist
+            await setDoc(userRef, {
+              wishlist: localWishlist,
+              email: user.email,
+            });
           }
+          
+          // Clear local storage after syncing
+          localStorage.removeItem("wishlist");
+          setLocalWishlistIds([]);
+          hasMigratedRef.current = true;
+          console.log("✅ Wishlist synced and localStorage cleared");
+        } catch (err) {
+          console.error("❌ Error syncing wishlist:", err);
         }
+      } else {
+        hasMigratedRef.current = true;
       }
     };
 
     syncLocalToFirebase();
   }, [isLoggedIn, user]);
 
+  // ✅ Reset migration flag on logout
+  useEffect(() => {
+    if (!isLoggedIn) {
+      hasMigratedRef.current = false;
+    }
+  }, [isLoggedIn]);
+
   // ✅ Listen to wishlist changes (Firebase for logged-in, localStorage for guests)
   useEffect(() => {
+    let unsubscribe = null;
+
     const fetchWishlist = async () => {
       setLoading(true);
 
@@ -82,9 +102,11 @@ const Wishlist = () => {
         // ✅ For logged-in users: use Firebase realtime listener
         const userRef = doc(db, "users", user.uid);
 
-        const unsubscribe = onSnapshot(userRef, async (snap) => {
+        unsubscribe = onSnapshot(userRef, async (snap) => {
+          console.log("🔥 Firebase snapshot received");
           if (snap.exists()) {
             const wishlist = snap.data().wishlist || [];
+            console.log("📋 Firebase wishlist IDs:", wishlist);
 
             // Fetch product details for each wishlist item
             const productPromises = wishlist.map(async (productId) => {
@@ -97,17 +119,18 @@ const Wishlist = () => {
             });
 
             const products = (await Promise.all(productPromises)).filter(Boolean);
+            console.log("✅ Fetched products:", products.length);
             setWishlistProducts(products);
           } else {
+            console.log("⚠️ User document doesn't exist");
             setWishlistProducts([]);
           }
           setLoading(false);
         });
-
-        return () => unsubscribe();
       } else {
         // ✅ For guest users: use localStorage
         const localWishlist = getLocalWishlist();
+        console.log("📱 Loading from localStorage:", localWishlist);
 
         if (localWishlist.length > 0) {
           const productPromises = localWishlist.map(async (productId) => {
@@ -120,35 +143,47 @@ const Wishlist = () => {
           });
 
           const products = (await Promise.all(productPromises)).filter(Boolean);
+          console.log("✅ Loaded products from localStorage:", products.length);
           setWishlistProducts(products);
+        } else {
+          setWishlistProducts([]);
         }
         setLoading(false);
       }
     };
 
     fetchWishlist();
-  }, [user, isLoggedIn]);
+
+    // Cleanup
+    return () => {
+      if (unsubscribe) {
+        console.log("🧹 Cleaning up Firebase listener");
+        unsubscribe();
+      }
+    };
+  }, [user, isLoggedIn, localWishlistIds]); // ✅ Added localWishlistIds as dependency
 
   // ✅ Remove from wishlist (works for both logged-in and guest users)
   const handleRemoveFromWishlist = async (productId) => {
     try {
+      console.log("🗑️ Removing from wishlist:", productId);
+      
       if (isLoggedIn && user?.uid) {
         // Remove from Firebase
         const userRef = doc(db, "users", user.uid);
         await updateDoc(userRef, {
           wishlist: arrayRemove(productId),
         });
+        console.log("✅ Removed from Firebase");
       } else {
         // Remove from localStorage
         const localWishlist = getLocalWishlist();
         const updatedWishlist = localWishlist.filter((id) => id !== productId);
-        saveLocalWishlist(updatedWishlist);
-        
-        // Update UI immediately
-        setWishlistProducts((prev) => prev.filter((p) => p.id !== productId));
+        saveLocalWishlist(updatedWishlist); // This will trigger re-render via localWishlistIds
+        console.log("✅ Removed from localStorage. New wishlist:", updatedWishlist);
       }
     } catch (err) {
-      console.error("Error removing from wishlist:", err);
+      console.error("❌ Error removing from wishlist:", err);
     }
   };
 
@@ -188,6 +223,10 @@ const Wishlist = () => {
               to save your wishlist permanently
             </p>
           )}
+          {/* Debug info - remove after fixing */}
+          <p className="text-xs text-gray-400 mt-2">
+            {isLoggedIn ? `Logged in | Items: ${wishlistProducts.length}` : `Guest | Items: ${wishlistProducts.length}`}
+          </p>
         </div>
 
         {wishlistProducts.length > 0 ? (

@@ -15,6 +15,8 @@ import {
   arrayUnion,
   arrayRemove,
   onSnapshot,
+  setDoc,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { useAuth } from "../../context/AuthContext";
@@ -55,6 +57,10 @@ const PopularProducts = ({ products = [], categories = [] }) => {
   const [searchParams] = useSearchParams();
   const [showComingSoon, setShowComingSoon] = useState(true);
 
+  // Track if we've already migrated for this user session
+  const hasMigratedRef = useRef(false);
+  const isFirstRenderRef = useRef(true);
+
   useEffect(() => {
     // read ?category=... and ?goal=...
     const urlCategory = searchParams.get("category");
@@ -70,22 +76,101 @@ const PopularProducts = ({ products = [], categories = [] }) => {
     }
   }, [searchParams]);
 
-  // ✅ UPDATED: wishlist live-updates with localStorage support
+  // ✅ COMBINED EFFECT: Handle both migration and real-time updates
   useEffect(() => {
+    console.log("🔄 Wishlist effect triggered. User:", user?.uid || "No user");
+
     if (!user) {
       // ✅ Load from localStorage for non-logged-in users
       const localWishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      console.log("📱 Loading from localStorage:", localWishlist);
       setWishlist(localWishlist);
+      hasMigratedRef.current = false; // Reset migration flag on logout
+      isFirstRenderRef.current = true; // Reset first render flag
       return;
     }
-    
-    // ✅ For logged-in users: Firebase real-time listener
+
+    // ✅ For logged-in users: Set up Firebase listener AND migrate
     const userRef = doc(db, "users", user.uid);
+    
+    // 🔥 ONLY run migration on the FIRST render to avoid double execution
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      
+      // Capture localStorage IMMEDIATELY
+      const localWishlistSnapshot = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      console.log("📸 Captured localStorage snapshot:", localWishlistSnapshot);
+      
+      // Migration function
+      const migrateWishlist = async () => {
+        if (hasMigratedRef.current) {
+          console.log("⏭️ Migration already done for this session");
+          return;
+        }
+
+        try {
+          console.log("📦 Using wishlist snapshot:", localWishlistSnapshot);
+
+          if (localWishlistSnapshot.length === 0) {
+            console.log("✅ No items in localStorage to migrate");
+            hasMigratedRef.current = true;
+            return;
+          }
+
+          // Get current Firebase data
+          const userSnap = await getDoc(userRef);
+          console.log("🔥 Firebase user doc exists:", userSnap.exists());
+
+          let firebaseWishlist = [];
+          if (userSnap.exists()) {
+            firebaseWishlist = userSnap.data().wishlist || [];
+            console.log("🔥 Existing Firebase wishlist:", firebaseWishlist);
+          }
+
+          // Merge wishlists using the snapshot
+          const mergedWishlist = [...new Set([...firebaseWishlist, ...localWishlistSnapshot])];
+          console.log("🔀 Merged wishlist:", mergedWishlist);
+
+          // Update or create Firebase document with merge: true to avoid permission issues
+          await setDoc(userRef, { wishlist: mergedWishlist }, { merge: true });
+
+          console.log("✅ Wishlist migrated successfully!");
+          
+          // Clear localStorage after successful migration
+          localStorage.removeItem("wishlist");
+          console.log("🗑️ LocalStorage cleared");
+          
+          hasMigratedRef.current = true;
+
+        } catch (error) {
+          console.error("❌ Migration error:", error);
+          // Don't block the app if migration fails - just log it
+          // User can still use their Firebase wishlist
+        }
+      };
+
+      // Run migration
+      migrateWishlist();
+    }
+
+    // Set up real-time listener (runs on every render)
     const unsub = onSnapshot(userRef, (snap) => {
-      if (snap.exists()) setWishlist(snap.data().wishlist || []);
-      else setWishlist([]);
+      if (snap.exists()) {
+        const fbWishlist = snap.data().wishlist || [];
+        console.log("🔴 Firebase snapshot updated:", fbWishlist);
+        setWishlist(fbWishlist);
+      } else {
+        console.log("⚠️ User document doesn't exist yet");
+        setWishlist([]);
+      }
+    }, (error) => {
+      console.error("❌ Snapshot error:", error);
     });
-    return () => unsub();
+
+    return () => {
+      console.log("🧹 Cleaning up Firebase listener");
+      unsub();
+    };
   }, [user]);
 
   // fetch goals from firestore
@@ -106,6 +191,7 @@ const PopularProducts = ({ products = [], categories = [] }) => {
   // ✅ UPDATED: handleWishlistToggle with localStorage support
   const handleWishlistToggle = async (product, e) => {
     e?.stopPropagation();
+    console.log("❤️ Toggle wishlist for:", product.name, "User:", user?.uid || "No user");
 
     if (!user) {
       // ✅ For non-logged-in users: use localStorage
@@ -115,25 +201,46 @@ const PopularProducts = ({ products = [], categories = [] }) => {
         const updated = localWishlist.filter(id => id !== product.id);
         localStorage.setItem("wishlist", JSON.stringify(updated));
         setWishlist(updated);
+        console.log("➖ Removed from localStorage:", product.id);
         showNotification(`${product.name} removed from wishlist`);
       } else {
         const updated = [...localWishlist, product.id];
         localStorage.setItem("wishlist", JSON.stringify(updated));
         setWishlist(updated);
+        console.log("➕ Added to localStorage:", product.id);
         showNotification(`${product.name} added to wishlist`);
       }
       return;
     }
 
     // ✅ For logged-in users: use Firebase
-    const userRef = doc(db, "users", user.uid);
+    try {
+      const userRef = doc(db, "users", user.uid);
 
-    if (wishlist.includes(product.id)) {
-      await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
-      showNotification(`${product.name} removed from wishlist`);
-    } else {
-      await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
-      showNotification(`${product.name} added to wishlist`);
+      // First check if document exists
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        // Create document with this item
+        console.log("📝 Creating new user document with wishlist");
+        await setDoc(userRef, { wishlist: [product.id] }, { merge: true });
+        showNotification(`${product.name} added to wishlist`);
+        return;
+      }
+
+      // Document exists, update it
+      if (wishlist.includes(product.id)) {
+        console.log("➖ Removing from Firebase:", product.id);
+        await updateDoc(userRef, { wishlist: arrayRemove(product.id) });
+        showNotification(`${product.name} removed from wishlist`);
+      } else {
+        console.log("➕ Adding to Firebase:", product.id);
+        await updateDoc(userRef, { wishlist: arrayUnion(product.id) });
+        showNotification(`${product.name} added to wishlist`);
+      }
+    } catch (error) {
+      console.error("❌ Error updating wishlist:", error);
+      showNotification("Failed to update wishlist. Please try again.");
     }
   };
 
@@ -231,7 +338,7 @@ const PopularProducts = ({ products = [], categories = [] }) => {
   return (
     <section className="py-12 bg-white relative">
       {notification && (
-        <div className="fixed top-20 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fadeIn">
+        <div className="fixed top-20 right-4 z-[9999] bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fadeIn">
           {notification}
         </div>
       )}
@@ -241,6 +348,10 @@ const PopularProducts = ({ products = [], categories = [] }) => {
           <h2 className="font-['Poppins'] text-5xl md:text-6xl text-[#07602e]">
             {activeGoal ? `Shop for ${goals.find(g => g.id === activeGoal)?.name ?? activeGoal}` : "Popular Products"}
           </h2>
+          <div className="text-xs text-gray-500 mt-2">
+            Debug: {user ? `Logged in as ${user.uid.slice(0, 8)}...` : "Not logged in"} | 
+            Wishlist items: {wishlist.length}
+          </div>
         </div>
 
         {/* category buttons */}
@@ -286,7 +397,8 @@ const PopularProducts = ({ products = [], categories = [] }) => {
         ) : (
           <Suspense fallback={<div>Loading products...</div>}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:mx-50">
-              {getDiverseProducts(filteredProducts, categories).map(prod => (
+              {/* Show only 4 diverse products on homepage, but all on products page */}
+              {getDiverseProducts(filteredProducts, categories).slice(0, 4).map(prod => (
                 <ProductCard
                   key={prod.id}
                   product={prod}
@@ -299,14 +411,16 @@ const PopularProducts = ({ products = [], categories = [] }) => {
                 />
               ))}
             </div>
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={() => navigate("/products")} 
-                className="px-6 py-2 bg-[#00a63e] text-white rounded-lg text-lg font-semibold hover:bg-green-700 transition"
-              >
-                Explore More
-              </button>
-            </div>
+            {filteredProducts.length > 4 && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => navigate("/products")} 
+                  className="px-6 py-2 bg-[#00a63e] text-white rounded-lg text-lg font-semibold hover:bg-green-700 transition"
+                >
+                  Explore More ({filteredProducts.length - 4} more products)
+                </button>
+              </div>
+            )}
           </Suspense>
         )}
       </div>

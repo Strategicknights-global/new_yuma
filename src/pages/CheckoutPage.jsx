@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { ChevronRight, Truck, Home } from "lucide-react";
 import Navbar from "../components/Navbar";
+import { sendOrderEmails } from "../../src/utils/emailService"; // Import email service
 
 const PRODUCT_COLLECTION_NAME = "products";
 
@@ -48,7 +49,7 @@ const CheckoutPage = () => {
     }
   }, [isLoggedIn, user, cart, loadingCart, navigate]);
 
-  // Auto-hide toast after 3 seconds
+  // Auto-hide toast after 4 seconds
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
@@ -129,7 +130,7 @@ const CheckoutPage = () => {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: amountInPaise,
         currency: "INR",
-        name: "Your Store Name",
+        name: "Yuma's Fresh Foods",
         description: `Order #${orderId}`,
         prefill: {
           name: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
@@ -138,35 +139,78 @@ const CheckoutPage = () => {
         },
         handler: async (response) => {
           try {
+            // Prepare order data
+            const orderData = {
+              userId: user.uid,
+              userEmail: user.email,
+              items: cart,
+              subtotal: totalCartValue,
+              shippingCost: shippingCost,
+              totalAmount: finalTotal,
+              shippingDetails,
+              shippingMethod,
+              status: "Confirmed",
+              paymentStatus: "Paid",
+              razorpayPaymentId: response.razorpay_payment_id,
+              createdAt: serverTimestamp(),
+              orderId,
+            };
+
+            // Save order to Firestore
             await runTransaction(db, async (transaction) => {
-              transaction.set(newOrderRef, {
-                userId: user.uid,
-                userEmail: user.email,
-                items: cart,
-                subtotal: totalCartValue,
-                shippingCost: shippingCost,
-                totalAmount: finalTotal,
-                shippingDetails,
-                shippingMethod,
-                status: "Confirmed",
-                paymentStatus: "Paid",
-                razorpayPaymentId: response.razorpay_payment_id,
-                createdAt: serverTimestamp(),
-                orderId,
-              });
+              transaction.set(newOrderRef, orderData);
             });
 
+            console.log("✅ Order saved to database");
+
+            // Send confirmation emails to customer and admin
+            const emailResults = await sendOrderEmails({
+              ...orderData,
+              createdAt: new Date(), // Use actual date for email formatting
+            });
+
+            // Log email results
+            if (emailResults.customer.success) {
+              console.log("✅ Customer confirmation email sent");
+            } else {
+              console.warn("⚠️ Customer email failed (order still placed):", emailResults.customer.error);
+            }
+
+            if (emailResults.admin.success) {
+              console.log("✅ Admin notification email sent");
+            } else {
+              console.warn("⚠️ Admin email failed (order still placed):", emailResults.admin.error);
+            }
+
+            // Clear cart
             await clearCart();
             setLoading(false);
 
-            setToast({ show: true, message: "Order placed successfully!", type: "success" });
+            // Show success message
+            const emailNote = (emailResults.customer.success && emailResults.admin.success)
+              ? "Check your email for confirmation!"
+              : emailResults.customer.success
+              ? "Confirmation email sent!"
+              : "";
+
+            setToast({ 
+              show: true, 
+              message: `Order placed successfully! ${emailNote}`, 
+              type: "success" 
+            });
             
+            // Redirect to products page
             setTimeout(() => {
               navigate("/products", { state: { orderSuccess: true } });
             }, 3000);
+
           } catch (err) {
-            console.error("Order creation error:", err);
-            setToast({ show: true, message: "Failed to create order. Please contact support.", type: "error" });
+            console.error("❌ Order creation error:", err);
+            setToast({ 
+              show: true, 
+              message: "Failed to create order. Please contact support.", 
+              type: "error" 
+            });
             setLoading(false);
           }
         },

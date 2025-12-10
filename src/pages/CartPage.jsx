@@ -11,10 +11,10 @@ const CartPage = () => {
   const navigate = useNavigate();
 
   const shippingCost = 0; // Free shipping
-  const deliveryFee = 10;
-  const discount = 25; // 25% discount
-  const discountAmount = (totalCartValue * discount) / 100;
-  const finalTotal = totalCartValue + shippingCost + deliveryFee - discountAmount;
+  // const deliveryFee = 10;
+  // const discount = 25; // 25% discount
+  // const discountAmount = (totalCartValue * discount) / 100;
+  const finalTotal = totalCartValue ;
 
   const handleCheckout = () => {
     if (!isLoggedIn || !user?.uid) {
@@ -125,14 +125,14 @@ const CartPage = () => {
                     <span>Subtotal</span>
                     <span className="font-medium text-gray-900">₹{totalCartValue.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  {/* <div className="flex justify-between text-gray-600">
                     <span>Discount (-{discount}%)</span>
                     <span className="font-medium text-red-600">-₹{discountAmount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
+                  </div> */}
+                  {/* <div className="flex justify-between text-gray-600">
                     <span>Delivery Fee</span>
                     <span className="font-medium text-gray-900">₹{deliveryFee.toFixed(2)}</span>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
@@ -184,29 +184,7 @@ const CartPage = () => {
           </div>
         )}
 
-        {/* Contact Section */}
-        {/* {cart && cart.length > 0 && (
-          <div className="mt-12 bg-gradient-to-r from-teal-700 to-teal-600 rounded-2xl p-8 text-white">
-            <div className="max-w-2xl">
-              <h2 className="text-2xl font-bold mb-2">WE'RE HERE TO HELP YOU!</h2>
-              <p className="text-teal-100 mb-6">
-                Have questions about our products, orders, or services? Reach out anytime.
-              </p>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="bg-white text-teal-700 p-3 rounded-full">📞</span>
-                  <p className="text-lg">+91 98765 43210</p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="bg-white text-teal-700 p-3 rounded-full">✉️</span>
-                  <p className="text-lg">yumas.customercare@gmail.com</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )} */}
+       
       </main>
     </div>
   );
