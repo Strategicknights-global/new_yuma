@@ -628,13 +628,13 @@ const CheckoutPage = () => {
               </div>
 
               {/* Shipping Info Message */}
-              {shippingDetails.state && (
+              {/* {shippingDetails.state && (
                 <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                   <p className="text-sm text-blue-700 font-medium">
                     {getShippingMessage()}
                   </p>
                 </div>
-              )}
+              )} */}
 
               {/* Price Breakdown */}
               <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">

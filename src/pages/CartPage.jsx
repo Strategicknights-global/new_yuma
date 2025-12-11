@@ -68,7 +68,8 @@ const CartPage = () => {
               {cart.map((item) => (
                 <div
                   key={item.cartKey}
-                  className="bg-white rounded-lg p-6 flex items-center gap-6 shadow-sm"
+                 className="bg-white rounded-lg p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 shadow-sm"
+
                 >
                   {/* Product Image */}
                   <div className="flex-shrink-0">
