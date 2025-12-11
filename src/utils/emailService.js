@@ -43,11 +43,17 @@ ${shippingDetails.country}`;
 /**
  * Get shipping method description
  */
-const getShippingMethodText = (method) => {
-  return method === 'free' 
-    ? 'Free Shipping (Delivery in 7-30 days)' 
-    : 'Express Shipping (Delivery in 2-3 days)';
+/**
+ * Get delivery time based on state
+ */
+const getDeliveryTimeText = (state) => {
+  if (!state) return "Delivery in 7–14 business days";
+
+  return state.trim().toLowerCase() === "karnataka"
+    ? "Delivery in 5–7 business days"
+    : "Delivery in 7–14 business days";
 };
+
 
 /**
  * Send order confirmation email to customer
@@ -62,7 +68,7 @@ export const sendCustomerEmail = async (orderData) => {
       order_id: orderData.orderId,
       payment_id: orderData.razorpayPaymentId,
       payment_status: 'Paid', // Add payment status
-      shipping_method: getShippingMethodText(orderData.shippingMethod),
+     shipping_method: getDeliveryTimeText(orderData.shippingDetails.state),
       shipping_address: formatShippingAddress(orderData.shippingDetails),
       order_items: formatOrderItemsHTML(orderData.items),
       subtotal: orderData.subtotal.toFixed(2),
@@ -103,7 +109,7 @@ export const sendAdminEmail = async (orderData) => {
         dateStyle: 'medium', 
         timeStyle: 'short' 
       }),
-      shipping_method: getShippingMethodText(orderData.shippingMethod),
+      shipping_method: getDeliveryTimeText(orderData.shippingDetails.state),
       shipping_address: formatShippingAddress(orderData.shippingDetails),
       order_items: formatOrderItemsHTML(orderData.items),
       subtotal: orderData.subtotal.toFixed(2),
